@@ -1,63 +1,16 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { DbExecutor } from "@/db/client";
-import { users } from "@/db/schema";
 import { tallyScore } from "@/lib/match-events";
-import { registerAccount } from "./accounts";
-import type { Actor } from "./actor";
-import { createGameweek, createSeason, setRsvp } from "./calendar";
 import { ForbiddenError, ScoringError } from "./errors";
 import {
   applyScoringOps, changeEventPlayer, claimScoring, getMatchView, listMatchAudit, lockGameweek,
   reconcileMatch, recordEvent, voidEvent,
 } from "./scoring";
-import { assignPlayer, createMatch, getGameweekTeams } from "./teams";
-import { makeInviteToken, withRollback } from "./test-utils";
-
-let counter = 0;
-async function makeUser(db: DbExecutor, name: string, role: Actor["role"]) {
-  const account = await registerAccount(db, {
-    email: `${name.toLowerCase()}${++counter}@example.com`,
-    phone: `+2547${String(700000 + counter).padStart(8, "0")}`,
-    password: "a-long-password",
-    displayName: name,
-    inviteToken: await makeInviteToken(db),
-  });
-  await db.update(users).set({ role }).where(eq(users.id, account.userId));
-  return { actor: { userId: account.userId, role } as Actor, playerId: account.playerId };
-}
-
-const kickoff = new Date("2026-11-28T13:00:00Z"); // lock 10:00Z
-const early = new Date("2026-11-28T09:00:00Z");
-const playTime = new Date("2026-11-28T14:00:00Z");
-let eventCounter = 0;
-const uuid = () => `00000000-0000-4000-8000-${String(++eventCounter).padStart(12, "0")}`;
-
-/** Organizer, a scorer, two players per team, a locked-teams match. */
-async function setup(db: DbExecutor) {
-  const organizer = await makeUser(db, "Organizer", "ORGANIZER");
-  const scorer = await makeUser(db, "Scorer", "MANAGER");
-  const season = await createSeason(db, organizer.actor, { name: `S${counter}`, startsOn: "2026-11-01" });
-  const gameweek = await createGameweek(db, organizer.actor, { seasonId: season.id, kickoffAt: kickoff });
-  const [a1, a2, b1, b2] = await Promise.all(["A1", "A2", "B1", "B2"].map((n) => makeUser(db, n, "MANAGER")));
-  const squad = [a1!, a2!, b1!, b2!];
-  for (const player of squad) {
-    await setRsvp(db, player.actor, { gameweekId: gameweek.id, playerId: player.playerId, status: "GOING" }, early);
-  }
-  await createMatch(db, organizer.actor, gameweek.id, early);
-  const [view] = await getGameweekTeams(db, gameweek.id);
-  const teamA = view!.teams[0]!;
-  const teamB = view!.teams[1]!;
-  for (const [player, team] of [[a1!, teamA], [a2!, teamA], [b1!, teamB], [b2!, teamB]] as const) {
-    await assignPlayer(db, organizer.actor, { teamId: team.id, playerId: player.playerId }, early);
-  }
-  const matchId = view!.id;
-  await claimScoring(db, scorer.actor, matchId, playTime);
-  return { organizer, scorer, gameweek, matchId, teamA: teamA.id, teamB: teamB.id, a1: a1!, a2: a2!, b1: b1!, b2: b2! };
-}
-
-const goalInput = (matchId: string, playerId: string, clientId = uuid()) =>
-  ({ matchId, clientId, type: "GOAL" as const, playerId, relatedClientId: null, occurredAt: playTime });
+import { setRsvp } from "./calendar";
+import { assignPlayer } from "./teams";
+import { early, goalInput, playTime, setupMatch as setup, uuid } from "./match-test-utils";
+import { makeUser, withRollback } from "./test-utils";
 
 async function score(db: DbExecutor, matchId: string, teams: string[]) {
   return tallyScore((await getMatchView(db, matchId)).events, teams);

@@ -84,3 +84,8 @@ select { font: inherit; padding: 0.3rem; border: 1px solid var(--border); border
 .sync.offline { color: var(--error-text); font-weight: 600; }
 .action-bar { position: sticky; bottom: 0.5rem; box-shadow: 0 4px 16px rgb(0 0 0 / 0.2); }
 button:disabled { opacity: 0.4; cursor: default; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; }
+th, td { padding: 0.5rem 0.6rem; text-align: right; border-bottom: 1px solid var(--border); }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 0.8rem; color: var(--muted); font-weight: 600; }

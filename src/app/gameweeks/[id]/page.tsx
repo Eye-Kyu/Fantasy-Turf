@@ -42,7 +42,7 @@ export default async function GameweekPage({
         Kick-off {formatKickoff(gameweek.kickoffAt)}. {open ? `RSVPs close ${formatKickoff(teamsLockAt(gameweek.kickoffAt))}.` : "RSVPs are closed."}
       </p>
       <Notices error={error} saved={saved} />
-      <p><Link href={`/gameweeks/${id}/teams`}>View teams</Link></p>
+      <p><Link href={`/gameweeks/${id}/teams`}>View teams</Link> · <Link href={`/gameweeks/${id}/points`}>Points</Link></p>
 
       {user.playerId && (
         <section className="card">

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { EventType } from "@/lib/domain";
 import {
+  breakdownMatch,
   scoreMatch,
   teamsEarningGoalDiffBonus,
   type RosterEntry,
@@ -94,5 +95,39 @@ describe("teamsEarningGoalDiffBonus", () => {
   it("gives no bonus when there is only one team", () => {
     const solo = roster.filter((r) => r.gameDayTeamId === "A");
     expect(teamsEarningGoalDiffBonus([goal("a1", "A"), goal("a1", "A")], solo).size).toBe(0);
+  });
+});
+
+describe("breakdownMatch", () => {
+  it("counts each kind of event and separates the team bonus from personal points", () => {
+    const events = [
+      event("GOAL", "a1", "A"),
+      event("ASSIST", "a2", "A"),
+      event("GOAL", "a1", "A"), // A leads 2-0: bonus
+      event("SAVE", "b2", "B"),
+      event("KEY_TACKLE", "b1", "B"),
+    ];
+    const result = breakdownMatch(events, roster);
+    expect(result.get("a1")).toEqual({ goals: 2, assists: 0, saves: 0, keyTackles: 0, eventPoints: 4, bonusPoints: 1 });
+    expect(result.get("a2")).toMatchObject({ assists: 1, eventPoints: 1, bonusPoints: 1 });
+    expect(result.get("b2")).toMatchObject({ saves: 1, bonusPoints: 0 });
+    expect(result.get("b1")).toMatchObject({ keyTackles: 1, bonusPoints: 0 });
+  });
+
+  it("agrees with scoreMatch", () => {
+    const events = [event("GOAL", "b1", "B"), event("GOAL", "b2", "B"), event("ASSIST", "b1", "B")];
+    for (const [playerId, total] of scoreMatch(events, roster)) {
+      const b = breakdownMatch(events, roster).get(playerId)!;
+      expect(b.eventPoints + b.bonusPoints).toBe(total);
+    }
+  });
+});
+
+describe("bonus when one side has nobody on the roster", () => {
+  it("still counts the empty team as the opponent", () => {
+    const events = [event("GOAL", "a1", "A"), event("GOAL", "a1", "A")];
+    const onlyA = roster.filter((r) => r.gameDayTeamId === "A");
+    expect(breakdownMatch(events, onlyA).get("a2")!.bonusPoints).toBe(0); // no opponent known
+    expect(breakdownMatch(events, onlyA, ["A", "B"]).get("a2")!.bonusPoints).toBe(1);
   });
 });

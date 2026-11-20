@@ -1,26 +1,9 @@
-import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { DbExecutor } from "@/db/client";
-import { users } from "@/db/schema";
-import { registerAccount } from "./accounts";
-import type { Actor } from "./actor";
 import { createGameweek, createSeason, setRsvp } from "./calendar";
 import { ForbiddenError, PlayerNotGoingError, TeamsLockedError } from "./errors";
 import { assignPlayer, createMatch, deleteMatch, getGameweekTeams, unassignPlayer } from "./teams";
-import { makeInviteToken, withRollback } from "./test-utils";
-
-let counter = 0;
-async function makeUser(db: DbExecutor, name: string, role: Actor["role"]) {
-  const account = await registerAccount(db, {
-    email: `${name.toLowerCase()}${++counter}@example.com`,
-    phone: `+2547${String(800000 + counter).padStart(8, "0")}`,
-    password: "a-long-password",
-    displayName: name,
-    inviteToken: await makeInviteToken(db),
-  });
-  await db.update(users).set({ role }).where(eq(users.id, account.userId));
-  return { actor: { userId: account.userId, role } as Actor, playerId: account.playerId };
-}
+import { makeUser, withRollback } from "./test-utils";
 
 const kickoff = new Date("2026-11-28T13:00:00Z"); // lock at 10:00Z
 const beforeLock = new Date("2026-11-28T09:00:00Z");
@@ -28,7 +11,7 @@ const beforeLock = new Date("2026-11-28T09:00:00Z");
 /** An organizer, a gameweek, and `count` players who are going. */
 async function setup(db: DbExecutor, count = 2) {
   const organizer = await makeUser(db, "Organizer", "ORGANIZER");
-  const season = await createSeason(db, organizer.actor, { name: `S${counter}`, startsOn: "2026-11-01" });
+  const season = await createSeason(db, organizer.actor, { name: `S${crypto.randomUUID().slice(0, 8)}`, startsOn: "2026-11-01" });
   const gameweek = await createGameweek(db, organizer.actor, { seasonId: season.id, kickoffAt: kickoff });
   const going = [];
   for (let i = 0; i < count; i++) {

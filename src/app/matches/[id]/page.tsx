@@ -132,7 +132,10 @@ export default async function MatchPage({
       {canReview && (
         <section className="card">
           <h2>Reconciliation</h2>
-          <p className="muted">Check the log above, fix anything wrong, then confirm. Changing events after confirming asks for another review.</p>
+          <p className="muted">
+            Check the log above, fix anything wrong, then confirm. Changing events after confirming asks for another review.
+            Mark who turned up on the <Link href={`/gameweeks/${gameweek.id}`}>gameweek page</Link> first, so team bonuses reach everyone who played.
+          </p>
           <div className="row-actions">
             {!locked && <Post action={reconcileAction} fields={{ matchId: id }} label={match.reconciledAt ? "Re-confirm match" : "Confirm match"} ghost={false} />}
             {!locked && (

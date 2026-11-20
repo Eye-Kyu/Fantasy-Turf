@@ -38,8 +38,10 @@ const isActive = (event: ScoringEvent): boolean => event.voidedAt === null;
 export function teamsEarningGoalDiffBonus(
   events: readonly ScoringEvent[],
   roster: readonly RosterEntry[],
+  /** Every team in the match, so a team with nobody on the roster still counts as an opponent. */
+  allTeamIds: readonly string[] = [],
 ): Set<string> {
-  const scores = new Map<string, number>(roster.map((r) => [r.gameDayTeamId, 0]));
+  const scores = new Map<string, number>([...roster.map((r) => r.gameDayTeamId), ...allTeamIds].map((id) => [id, 0]));
   const earned = new Set<string>();
 
   // A lead needs an opponent; a match with fewer than two teams cannot have one.
@@ -63,34 +65,62 @@ export function teamsEarningGoalDiffBonus(
   return earned;
 }
 
+/** What one player did in one match, and the points it earned. */
+export interface PlayerMatchBreakdown {
+  goals: number;
+  assists: number;
+  saves: number;
+  keyTackles: number;
+  /** Points from the player's own events. */
+  eventPoints: number;
+  /** The team goal-difference bonus, 0 or GOAL_DIFF_BONUS_POINTS. */
+  bonusPoints: number;
+}
+
 /**
- * Scores one match. Every rostered player appears in the result (0 if they did
- * nothing), so callers can tell "played, scored 0" from "did not attend".
+ * Scores one match in detail. Every rostered player appears in the result (all zeros if
+ * they did nothing), so callers can tell "played, scored 0" from "did not play".
  *
- * @throws if an active event belongs to a player who is not on the roster; that is
+ * `allTeamIds` lists every team in the match, so the bonus still works when one side has
+ * nobody on the roster. @throws if an active event belongs to a player who is not on the roster; that is
  *   a data-integrity problem to surface at reconciliation, not to score around.
  */
-export function scoreMatch(
+export function breakdownMatch(
   events: readonly ScoringEvent[],
   roster: readonly RosterEntry[],
-): Map<string, number> {
-  const points = new Map<string, number>(roster.map((r) => [r.playerId, 0]));
+  allTeamIds: readonly string[] = [],
+): Map<string, PlayerMatchBreakdown> {
+  const result = new Map<string, PlayerMatchBreakdown>(
+    roster.map((r) => [r.playerId, { goals: 0, assists: 0, saves: 0, keyTackles: 0, eventPoints: 0, bonusPoints: 0 }]),
+  );
 
   for (const event of events.filter(isActive)) {
-    const current = points.get(event.playerId);
-    if (current === undefined) {
+    const entry = result.get(event.playerId);
+    if (entry === undefined) {
       throw new Error(
         `Event ${event.id} references player ${event.playerId}, who is not on a game-day team in this match`,
       );
     }
-    points.set(event.playerId, current + EVENT_POINTS[event.type]);
+    if (event.type === "GOAL") entry.goals += 1;
+    else if (event.type === "ASSIST") entry.assists += 1;
+    else if (event.type === "SAVE") entry.saves += 1;
+    else entry.keyTackles += 1;
+    entry.eventPoints += EVENT_POINTS[event.type];
   }
 
-  const bonusTeams = teamsEarningGoalDiffBonus(events, roster);
+  const bonusTeams = teamsEarningGoalDiffBonus(events, roster, allTeamIds);
   for (const { playerId, gameDayTeamId } of roster) {
-    if (bonusTeams.has(gameDayTeamId)) {
-      points.set(playerId, (points.get(playerId) ?? 0) + GOAL_DIFF_BONUS_POINTS);
-    }
+    if (bonusTeams.has(gameDayTeamId)) result.get(playerId)!.bonusPoints = GOAL_DIFF_BONUS_POINTS;
   }
-  return points;
+  return result;
+}
+
+/** Total points per rostered player for one match. See `breakdownMatch` for the rules. */
+export function scoreMatch(
+  events: readonly ScoringEvent[],
+  roster: readonly RosterEntry[],
+): Map<string, number> {
+  return new Map(
+    [...breakdownMatch(events, roster)].map(([playerId, b]) => [playerId, b.eventPoints + b.bonusPoints]),
+  );
 }

@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { DbExecutor } from "@/db/client";
-import { registerAccount } from "./accounts";
-import type { Actor } from "./actor";
 import {
   confirmAttendance,
   createGameweek,
@@ -13,22 +11,7 @@ import {
   setRsvp,
 } from "./calendar";
 import { ForbiddenError, RsvpClosedError, SeasonExistsError } from "./errors";
-import { makeInviteToken, withRollback } from "./test-utils";
-import { eq } from "drizzle-orm";
-import { users } from "@/db/schema";
-
-let counter = 0;
-async function makeUser(db: DbExecutor, name: string, role: Actor["role"]) {
-  const account = await registerAccount(db, {
-    email: `${name.toLowerCase()}${++counter}@example.com`,
-    phone: `+2547${String(900000 + counter).padStart(8, "0")}`,
-    password: "a-long-password",
-    displayName: name,
-    inviteToken: await makeInviteToken(db),
-  });
-  await db.update(users).set({ role }).where(eq(users.id, account.userId));
-  return { actor: { userId: account.userId, role } as Actor, playerId: account.playerId };
-}
+import { makeUser, withRollback } from "./test-utils";
 
 const kickoff = new Date("2026-11-28T13:00:00Z"); // lock at 10:00Z
 

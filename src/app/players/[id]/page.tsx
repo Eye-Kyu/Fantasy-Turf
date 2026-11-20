@@ -3,7 +3,9 @@ import { z } from "zod";
 import { getDb } from "@/db/client";
 import { can } from "@/lib/auth/permissions";
 import { requireUser } from "@/server/current-user";
+import { listSeasons } from "@/server/calendar";
 import { getPlayerProfile, listTraits } from "@/server/players";
+import { getSeasonTotals } from "@/server/points";
 import { Notices } from "../../components";
 import { setTraitsAction, updateProfileAction } from "../actions";
 
@@ -27,6 +29,8 @@ export default async function PlayerProfilePage({
   const isOwner = user.playerId === profile.id;
   const canSetTraits = can(user.role, "setTraits");
   const allTraits = canSetTraits ? await listTraits(db) : [];
+  const [season] = await listSeasons(db);
+  const seasonStats = season ? (await getSeasonTotals(db, season.id)).find((row) => row.playerId === id) : undefined;
   const ownedTraitIds = new Set(profile.traits.map((trait) => trait.id));
 
   return (
@@ -40,6 +44,14 @@ export default async function PlayerProfilePage({
           <div><dt>Price</dt><dd>{profile.price}</dd></div>
           <div><dt>Streak</dt><dd>{profile.currentStreak}</dd></div>
         </dl>
+        {season && (
+          <dl className="stats" aria-label={`${season.name} stats`}>
+            <div><dt>Points</dt><dd>{seasonStats?.total ?? 0}</dd></div>
+            <div><dt>Goals</dt><dd>{seasonStats?.goals ?? 0}</dd></div>
+            <div><dt>Assists</dt><dd>{seasonStats?.assists ?? 0}</dd></div>
+            <div><dt>Matches</dt><dd>{seasonStats?.matchesPlayed ?? 0}</dd></div>
+          </dl>
+        )}
         {profile.bio && <p>{profile.bio}</p>}
         <div>
           {profile.traits.length === 0 ? (

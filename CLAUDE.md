@@ -264,6 +264,7 @@ schema or code; reinstating them means the changes noted.
 - [ ] Organizer RSVP/attendance changes are not audited yet (add when the audit log is built, step 5)
 - [ ] Scoring screen: assists can only be added right after a goal; add a way to add a missed assist or event during reconciliation?
 - [ ] The cached scoring page stays on the phone after sign-out (it holds that match's roster only); clear it on logout if shared phones are a concern
+- [ ] Who counts as having played: currently marked attended OR has an event in the match (an event proves presence). Team bonus and match count use this. Confirm, or require organizers to mark attendance for everyone?
 - [ ] Auto-sub bench priority rule when several bench players attended (default: bench order)
 - [ ] Profile picture storage (local disk on the homelab vs. a hosted service); the profile has no picture upload until decided
 - [ ] Password reset: recommended approach is organizer-issued one-time reset links (same mechanism as invites, no email/SMS service needed); build when first needed
@@ -310,6 +311,7 @@ in `.env` at it. Never edit an applied migration; change the schema and run
 5. Live scoring PWA (offline queue, undo) + reconciliation + audit log + locking
    (done: `/matches/[id]` (score, event log, claim scoring, reconcile, lock gameweek, audit log for organizers) and `/matches/[id]/score` (offline-first scoring screen; queue and last server snapshot kept in localStorage, `public/sw.js` caches the page and static assets, installable via `public/manifest.webmanifest`). Rules live in `src/server/scoring.ts` and the pure `src/lib/match-events.ts`. Not built yet: adding a missed assist/event during reconciliation, save/tackle scoring points)
 6. Scoring engine (goal, assist, goal-diff bonus first; TBD values wired as set)
+   (done: `src/server/points.ts` computes player points from events, attendance and fines on every request (nothing stored), via `breakdownMatch` in `src/lib/scoring/engine.ts`. Pages: `/gameweeks/[id]/points` (provisional until the gameweek is locked), `/leaderboard` (season player points), season stats on profiles. Save and key-tackle points stay 0 until decided)
 7. Fines: violation catalog seed, issue/void flow, applied to gameweek scores
 8. Ratings update, fantasy squads, auto-sub, captain, transfers, leaderboards
 9. Partnerships, streaks, awards, WhatsApp notifications and result cards

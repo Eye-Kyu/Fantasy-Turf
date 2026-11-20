@@ -1,10 +1,5 @@
-import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { DbExecutor } from "@/db/client";
-import { users } from "@/db/schema";
-import type { UserRole } from "@/lib/auth/roles";
-import { registerAccount } from "./accounts";
-import type { Actor } from "./actor";
 import { ForbiddenError, TraitExistsError } from "./errors";
 import {
   createTrait,
@@ -13,23 +8,7 @@ import {
   setPlayerTraits,
   updateOwnProfile,
 } from "./players";
-import { makeInviteToken, withRollback } from "./test-utils";
-
-let phoneCounter = 0;
-
-/** Registers a user with the given role and returns them as an actor plus their player id. */
-async function makeUser(db: DbExecutor, name: string, role: UserRole) {
-  const account = await registerAccount(db, {
-    email: `${name.toLowerCase()}@example.com`,
-    phone: `+2547${String(++phoneCounter).padStart(8, "0")}`,
-    inviteToken: await makeInviteToken(db),
-    password: "a-long-password",
-    displayName: name,
-  });
-  await db.update(users).set({ role }).where(eq(users.id, account.userId));
-  const actor: Actor = { userId: account.userId, role };
-  return { actor, playerId: account.playerId };
-}
+import { makeUser, withRollback } from "./test-utils";
 
 describe("traits are super-admin only", () => {
   it("forbids managers and organizers from creating traits or assigning them", () =>
