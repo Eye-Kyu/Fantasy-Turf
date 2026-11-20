@@ -1,12 +1,9 @@
 import { pgEnum } from "drizzle-orm/pg-core";
+import { USER_ROLES } from "../../lib/auth/roles";
 import { EVENT_TYPES } from "../../lib/domain";
 
-export const userRole = pgEnum("user_role", [
-  "MANAGER",
-  "ORGANIZER",
-  // The only role that may set player traits; also manages users and roles.
-  "SUPER_ADMIN",
-]);
+// Values come from src/lib/auth/roles.ts (see there for what each role may do).
+export const userRole = pgEnum("user_role", USER_ROLES);
 
 export const rsvpStatus = pgEnum("rsvp_status", ["GOING", "NOT_GOING", "NO_RESPONSE"]);
 

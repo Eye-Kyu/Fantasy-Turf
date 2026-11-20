@@ -1,11 +1,40 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
+import { can } from "@/lib/auth/permissions";
+import { getCurrentUser } from "@/server/current-user";
+import { logoutAction } from "./auth-actions";
+import "./globals.css";
 
 export const metadata = { title: "Street Football Fantasy League" };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <header className="site-header">
+          <nav>
+            <Link href="/" className="brand">Street Football Fantasy</Link>
+            <Link href="/players">Players</Link>
+            {user && can(user.role, "setTraits") && <Link href="/admin/traits">Traits</Link>}
+            {user ? (
+              <>
+                {user.playerId && <Link href={`/players/${user.playerId}`}>My profile</Link>}
+                <form action={logoutAction}>
+                  <button type="submit" className="link">Sign out</button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Link href="/login">Sign in</Link>
+                <Link href="/register">Join</Link>
+              </>
+            )}
+          </nav>
+        </header>
+        {children}
+      </body>
     </html>
   );
 }

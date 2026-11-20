@@ -1,5 +1,5 @@
 import { doublePrecision, integer, numeric, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
-import { createdAt, id } from "./columns";
+import { createdAt, id, timestamptz } from "./columns";
 import { userRole } from "./enums";
 
 export const users = pgTable("users", {
@@ -7,6 +7,18 @@ export const users = pgTable("users", {
   email: text().notNull().unique(),
   passwordHash: text().notNull(),
   role: userRole().notNull().default("MANAGER"),
+  createdAt: createdAt(),
+});
+
+// Login sessions. Only a hash of the cookie token is stored, so a leaked database
+// cannot be used to impersonate anyone. Deleting a row logs that device out.
+export const sessions = pgTable("sessions", {
+  id: id(),
+  userId: uuid()
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text().notNull().unique(),
+  expiresAt: timestamptz().notNull(),
   createdAt: createdAt(),
 });
 

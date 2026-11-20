@@ -7,6 +7,10 @@ export function createDb(connectionString: string) {
 }
 
 export type Db = ReturnType<typeof createDb>;
+export type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
+
+/** Anything queries can run on: the client itself or an open transaction. */
+export type DbExecutor = Db | DbTransaction;
 
 let shared: Db | undefined;
 

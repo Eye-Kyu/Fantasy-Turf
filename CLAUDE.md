@@ -36,7 +36,12 @@ minimal: several rules were scoped out for now and are listed under **Deferred**
 | `ORGANIZER` | Sort players into game-day teams (until the lock), confirm attendance, issue and void fines, reconcile matches |
 | `MANAGER` | Own a fantasy squad, RSVP, view profiles, place bets (later) |
 
-Enforce permissions at the API boundary, never in the UI alone.
+Enforce permissions at the API boundary, never in the UI alone. The rules live in one
+place, `src/lib/auth/permissions.ts` (`can(role, action)`), and every service function
+checks the actor itself, so a page cannot forget the check.
+
+Registration is open and always creates a `MANAGER`. The first super admin (and any
+later role change) is made on the server: `npm run admin:promote -- <email> [ROLE]`.
 
 ## Core rules
 
@@ -209,7 +214,7 @@ Defined in `src/db/schema/` (one file per domain); keep this table in sync with 
 | ORM | **Drizzle ORM** (`pg` driver) + drizzle-kit | Schema is plain TypeScript in `src/db/schema/`; migrations are SQL files in `drizzle/`; no engine binaries to download, so it works on locked-down networks |
 | Live scoring | Same app, mobile PWA route with offline queue | No separate native app |
 | Validation | Zod, shared by client and server | Single source of truth for input rules |
-| Auth | Simple email/phone + password (Auth.js or Lucia) | Enough at this scale |
+| Auth | Own minimal session auth: email + password (scrypt from Node's `crypto`), sessions in the `sessions` table, cookie holds a random token and the database stores only its SHA-256 hash | Enough at this scale, no extra dependency; the role is read fresh on every request so role changes apply immediately |
 | Tests | Vitest | Fast unit tests for scoring/fines/rating logic |
 | Hosting | Homelab behind a tunnel (Cloudflare Tunnel or Tailscale); VPS as fallback | Near-zero cost |
 | Backups | Automated nightly `pg_dump` to a second location | Losing a season of stats is unacceptable |
@@ -243,6 +248,10 @@ schema or code; reinstating them means the changes noted.
 - [ ] Bet starting balance and stake/payout mechanics
 - [ ] WhatsApp integration approach (Business API vs. manual share links)
 - [ ] Auto-sub bench priority rule when several bench players attended (default: bench order)
+- [ ] Login identifier: email only today; add phone number sign-in?
+- [ ] Registration: open to anyone who finds the site (current) or invite-only / approved by an organizer?
+- [ ] Profile picture storage (local disk on the homelab vs. a hosted service); the profile has no picture upload until decided
+- [ ] Security follow-ups before exposing the site publicly: login rate limiting, password reset, email verification
 
 ## Commands
 
@@ -254,6 +263,8 @@ schema or code; reinstating them means the changes noted.
 | `npm run db:generate` | After editing `src/db/schema/`, write a new SQL migration into `drizzle/` (no database needed) |
 | `npm run db:migrate` | Apply pending migrations to the database in `DATABASE_URL` |
 | `npm run db:studio` | Browse the database in Drizzle Studio |
+| `npm run test:db` | Integration tests against the real Postgres in `DATABASE_URL` (`*.int.test.ts`; each test rolls back its changes) |
+| `npm run admin:promote -- <email> [ROLE]` | Set a user's role (default `SUPER_ADMIN`); the only way to create the first super admin |
 
 The first migration (`drizzle/0000_init.sql`, 21 tables) is generated and committed.
 To set up a fresh machine:
@@ -273,6 +284,7 @@ in `.env` at it. Never edit an applied migration; change the schema and run
 
 1. Repo, tooling, Drizzle schema + first migration, shared constants (done)
 2. Auth, roles (incl. super admin) + player profiles; trait editing (super admin only)
+   (done; profile picture upload waits on the storage decision in Open items)
 3. Seasons, gameweeks, RSVP/attendance
 4. Manual team sorting with the 3-hour lock
 5. Live scoring PWA (offline queue, undo) + reconciliation + audit log + locking
