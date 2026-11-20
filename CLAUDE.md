@@ -178,6 +178,8 @@ caching proves necessary.
 
 ### Core tables
 
+Defined in `src/db/schema/` (one file per domain); keep this table in sync with it.
+
 | Table | Purpose |
 | --- | --- |
 | `users` | Login identity; role (manager / organizer / super admin) |
@@ -204,7 +206,7 @@ caching proves necessary.
 | --- | --- | --- |
 | Database | PostgreSQL, self-hosted | Matches schema decision |
 | App | **Next.js (App Router) full-stack**, TypeScript | One deployable; route handlers and server actions replace a separate Express/Fastify API, so validation lives in one place |
-| ORM | Prisma | Type-safe queries, migrations |
+| ORM | **Drizzle ORM** (`pg` driver) + drizzle-kit | Schema is plain TypeScript in `src/db/schema/`; migrations are SQL files in `drizzle/`; no engine binaries to download, so it works on locked-down networks |
 | Live scoring | Same app, mobile PWA route with offline queue | No separate native app |
 | Validation | Zod, shared by client and server | Single source of truth for input rules |
 | Auth | Simple email/phone + password (Auth.js or Lucia) | Enough at this scale |
@@ -218,7 +220,8 @@ These were designed and then deliberately removed from phase 1. They are not in 
 schema or code; reinstating them means the changes noted.
 
 - **Trait-based team sorting.** Exclusive-category traits (no two last-man defenders on
-  one team, except special games). Needs `Trait.isExclusive` and `Match.isSpecial`.
+  one team, except special games). Needs an `isExclusive` flag on traits and an
+  `isSpecial` flag on matches.
 - **Auto-balance and captains' draft.** Auto-balance spreads exclusive-trait players
   first, then evens out summed rating, with a balance score; the draft is snake-order
   with captains. Trait weighting for the balance was never defined.
@@ -248,26 +251,27 @@ schema or code; reinstating them means the changes noted.
 | `npm run dev` | Start the app (needs `.env`; copy `.env.example`) |
 | `npm test` | Unit tests (Vitest) |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run db:generate` | Generate the Prisma client |
-| `npm run db:migrate` | Create/apply a migration against the local Postgres |
+| `npm run db:generate` | After editing `src/db/schema/`, write a new SQL migration into `drizzle/` (no database needed) |
+| `npm run db:migrate` | Apply pending migrations to the database in `DATABASE_URL` |
+| `npm run db:studio` | Browse the database in Drizzle Studio |
 
-Prisma commands download engine binaries from `binaries.prisma.sh`. The schema is
-validated and the app builds without them, but no migration has been created yet.
-On a machine with network access, run the first migration like this:
+The first migration (`drizzle/0000_init.sql`, 21 tables) is generated and committed.
+To set up a fresh machine:
 
 ```bash
 cp .env.example .env          # default URL matches docker-compose.yml
 docker compose up -d          # Postgres 16 on localhost:5432
 npm install
-npm run db:migrate -- --name init
+npm run db:migrate
 ```
 
-Commit the generated `prisma/migrations/`. Without Docker, any local Postgres works:
-create a database and point `DATABASE_URL` in `.env` at it.
+Without Docker, any local Postgres works: create a database and point `DATABASE_URL`
+in `.env` at it. Never edit an applied migration; change the schema and run
+`npm run db:generate` to add a new one.
 
 ## Build order
 
-1. Repo, tooling, Prisma schema + migrations, shared constants (this scaffold)
+1. Repo, tooling, Drizzle schema + first migration, shared constants (done)
 2. Auth, roles (incl. super admin) + player profiles; trait editing (super admin only)
 3. Seasons, gameweeks, RSVP/attendance
 4. Manual team sorting with the 3-hour lock

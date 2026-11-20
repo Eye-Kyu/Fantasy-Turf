@@ -1,9 +1,7 @@
 /**
- * Domain types shared by pure logic (scoring, balancing, ratings).
- *
- * The event types mirror the `EventType` enum in prisma/schema.prisma. They are
- * declared here so pure logic and its tests do not depend on a generated Prisma
- * client; src/lib/domain.test.ts fails if the two ever drift apart.
+ * Domain types shared by pure logic (scoring, balancing, ratings) and the database
+ * schema. The `event_type` enum in src/db/schema/enums.ts is built from this list, so
+ * the code and the database cannot drift apart.
  */
 export const EVENT_TYPES = ["GOAL", "ASSIST", "SAVE", "KEY_TACKLE"] as const;
 
