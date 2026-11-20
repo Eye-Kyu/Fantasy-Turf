@@ -11,13 +11,13 @@ export default async function PlayersPage() {
     <main>
       <h1>Players</h1>
       {players.length === 0 ? (
-        <p className="muted">No players yet.</p>
+        <div className="empty"><p>No players yet.</p></div>
       ) : (
         <ul className="plain card">
           {players.map((player) => (
             <li key={player.id}>
-              <Link href={`/players/${player.id}`}>{player.displayName}</Link>
-              <span className="muted">{Math.round(player.rating)}</span>
+              <Link href={`/players/${player.id}`} className="row-title">{player.displayName}</Link>
+              <span className="row-figure" title="Rating">{Math.round(player.rating)}</span>
             </li>
           ))}
         </ul>

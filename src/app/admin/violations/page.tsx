@@ -34,7 +34,7 @@ export default async function ViolationsAdminPage({
         {violations.length === 0 && <li className="muted">No violations yet.</li>}
         {violations.map((v) => (
           <li key={v.id} className={v.isActive ? "" : "voided"}>
-            <span>{v.name}<span className="muted">{v.description ? ` · ${v.description}` : ""}</span></span>
+            <span className="row-main"><span className="row-title">{v.name}</span>{v.description && <span className="meta">{v.description}</span>}</span>
             <form action={updateViolationAction} className="row-actions">
               <input type="hidden" name="violationTypeId" value={v.id} />
               <input type="number" name="defaultPoints" defaultValue={v.defaultPoints} min={1} max={MAX_FINE_POINTS} aria-label="Points" className="points" />

@@ -9,7 +9,7 @@ import { getGameweek, listAttendance } from "@/server/calendar";
 import { requireUser } from "@/server/current-user";
 import { listGameweekFines, listViolations } from "@/server/fines";
 import { getGameweekTeams } from "@/server/teams";
-import { FineList, Notices } from "../../../components";
+import { FineList, GameweekNav, Notices } from "../../../components";
 import { issueFineAction, voidFineAction } from "./actions";
 
 export default async function GameweekFinesPage({
@@ -37,14 +37,18 @@ export default async function GameweekFinesPage({
 
   return (
     <main>
-      <h1>Fines · Gameweek {gameweek.number}</h1>
-      <p className="muted">
-        <Link href={`/gameweeks/${id}`}>← Gameweek {gameweek.number}</Link> · {formatKickoff(gameweek.kickoffAt)}
-      </p>
+      <header className="page-head">
+        <Link href={`/gameweeks/${id}`} className="crumb">Gameweek {gameweek.number}</Link>
+        <h1>Fines</h1>
+        <p>{formatKickoff(gameweek.kickoffAt)}</p>
+      </header>
+      <GameweekNav gameweekId={id} current="/fines" />
       <Notices error={error} saved={saved} />
 
+      <div className={canIssue ? "split" : "stack"}>
+      <FineList fines={fines} voidAction={canIssue ? voidFineAction : undefined} />
       {canIssue && (
-        <form action={issueFineAction} className="card stack">
+        <form action={issueFineAction} className="card">
           <h2>Issue a fine</h2>
           <input type="hidden" name="gameweekId" value={id} />
           <label>Player
@@ -73,8 +77,7 @@ export default async function GameweekFinesPage({
           {violations.length === 0 && <p className="muted">The violation list is empty. Load it under Violations.</p>}
         </form>
       )}
-
-      <FineList fines={fines} voidAction={canIssue ? voidFineAction : undefined} />
+      </div>
     </main>
   );
 }

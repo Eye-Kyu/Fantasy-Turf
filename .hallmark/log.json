@@ -1,0 +1,15 @@
+[
+ {
+  "mode": "redesign",
+  "depth": "full",
+  "scope": "app",
+  "shape": "app screen",
+  "theme": "custom",
+  "axes": "light/display-condensed/chromatic-plum",
+  "nav": "plum masthead, scrolling tab row",
+  "signature": "pitch view, 1-2-1 diamond over a bench strip",
+  "prompt": "FPL-style revamp of a street football fantasy league app",
+  "waived": [],
+  "date": "2026-11-20"
+ }
+]

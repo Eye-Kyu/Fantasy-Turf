@@ -1,0 +1,90 @@
+:root {
+  color-scheme: light;
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+
+  /* App scale, 1.2 ratio from a 16px body; the display face is condensed, so heads run a step larger. */
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem; --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.074rem; --text-4xl: 2.488rem;
+  --text-display-s: 1.728rem; --text-display: 2.488rem; --text-section: 1.44rem; --text-title: 1.2rem; --text-lead: 1.0625rem; --text-figure: 2.986rem;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+
+  --container: 1120px; --container-narrow: 34rem; --gutter: 40px; --gap-columns: 24px;
+  --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
+
+  /* Paper and ink, tinted toward the plum anchor. */
+  --color-paper: oklch(98.4% 0.005 330); --color-paper-2: oklch(95.6% 0.011 330); --color-paper-3: oklch(92.4% 0.016 330);
+  --color-surface: oklch(99.4% 0.003 330);
+  --color-ink: oklch(22% 0.06 330); --color-ink-2: oklch(36% 0.045 330); --color-muted: oklch(49% 0.03 330);
+  --color-rule: oklch(89.5% 0.014 330); --color-rule-strong: oklch(62% 0.03 330);
+
+  /* The field: the masthead and score bands. */
+  --color-field: oklch(24% 0.11 330); --color-field-2: oklch(31% 0.12 330); --color-field-3: oklch(38% 0.12 330);
+  --color-field-ink: oklch(97.5% 0.01 330); --color-field-muted: oklch(83% 0.04 330);
+
+  /* The signal: current tab, the figures that matter, the captain. Only ever on the field or the pitch. */
+  --color-signal: oklch(89% 0.19 152); --color-signal-ink: oklch(24% 0.11 330);
+
+  /* The primary action. */
+  --color-accent: oklch(38% 0.16 330); --color-accent-hover: oklch(32% 0.15 330); --color-accent-press: oklch(27% 0.13 330); --color-accent-ink: oklch(98% 0.008 330);
+  --color-focus: oklch(42% 0.2 330); --color-focus-on-field: var(--color-signal);
+  --color-link: oklch(40% 0.16 330);
+
+  /* The pitch. */
+  --color-pitch: oklch(55% 0.13 148); --color-pitch-2: oklch(59% 0.135 148); --color-pitch-line: oklch(80% 0.08 148);
+  --color-plate: oklch(99% 0.004 330); --color-plate-ink: oklch(22% 0.06 330);
+  --color-shirt: oklch(97% 0.01 330); --color-shirt-trim: oklch(24% 0.11 330);
+  --color-bench: oklch(93% 0.035 148);
+  --color-shirt-bench: oklch(92.4% 0.016 330); --color-me-bar: var(--color-field);
+
+  /* The programme: printed grain on the paper, ticket stock, the perforation. */
+  --color-grain: oklch(30% 0.06 330 / 0.07);
+  --color-ticket: oklch(99.4% 0.003 330); --color-ticket-stub: oklch(95.6% 0.011 330);
+  --color-perf: oklch(80% 0.02 330);
+  --color-cover-glow: oklch(34% 0.15 330);
+  --nav-bar-h: 64px;
+
+  /* States. */
+  --color-error: oklch(48% 0.18 27); --color-error-bg: oklch(95.5% 0.03 27);
+  --color-success: oklch(40% 0.1 150); --color-success-bg: oklch(95% 0.045 150);
+  --color-me: oklch(95% 0.06 152);
+  --color-disabled: oklch(90% 0.01 330); --color-disabled-ink: oklch(55% 0.02 330);
+  --color-shadow: oklch(20% 0.06 330 / 0.14); --color-shadow-strong: oklch(20% 0.06 330 / 0.28);
+
+  --font-display: "Bahnschrift", "Avenir Next Condensed", "sans-serif-condensed", "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", ui-sans-serif, sans-serif;
+  --font-outlier: var(--font-body);
+  --stretch-display: 87.5%;
+
+  --radius-card: 12px; --radius-control: 8px; --radius-inner: 6px; --radius-pill: 999px; --rule-hair: 1px;
+  --shadow-card: 0 1px 2px var(--color-shadow);
+  --shadow-float: 0 8px 24px var(--color-shadow-strong);
+  --control-h: 40px; --control-h-s: 32px;
+  --tracking-display: -0.01em;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-paper: oklch(16% 0.025 330); --color-paper-2: oklch(20% 0.03 330); --color-paper-3: oklch(24% 0.035 330);
+    --color-surface: oklch(19% 0.03 330);
+    --color-ink: oklch(95% 0.01 330); --color-ink-2: oklch(86% 0.02 330); --color-muted: oklch(73% 0.03 330);
+    --color-rule: oklch(29% 0.035 330); --color-rule-strong: oklch(55% 0.04 330);
+    --color-field: oklch(22% 0.1 330); --color-field-2: oklch(29% 0.11 330); --color-field-3: oklch(36% 0.12 330);
+    --color-accent: oklch(86% 0.18 152); --color-accent-hover: oklch(90% 0.17 152); --color-accent-press: oklch(80% 0.17 152); --color-accent-ink: oklch(22% 0.1 330);
+    --color-focus: oklch(86% 0.19 152);
+    --color-link: oklch(86% 0.14 152);
+    --color-pitch: oklch(44% 0.11 148); --color-pitch-2: oklch(47% 0.115 148); --color-pitch-line: oklch(68% 0.07 148);
+    --color-bench: oklch(24% 0.04 148);
+    --color-shirt-bench: oklch(72% 0.02 330); --color-me-bar: var(--color-signal);
+    --color-grain: oklch(90% 0.02 330 / 0.04);
+    --color-ticket: oklch(19% 0.03 330); --color-ticket-stub: oklch(23% 0.04 330);
+    --color-perf: oklch(36% 0.04 330);
+    --color-cover-glow: oklch(30% 0.13 330);
+    --color-error: oklch(80% 0.11 27); --color-error-bg: oklch(26% 0.07 27);
+    --color-success: oklch(84% 0.11 150); --color-success-bg: oklch(25% 0.05 150);
+    --color-me: oklch(28% 0.06 152);
+    --color-disabled: oklch(27% 0.02 330); --color-disabled-ink: oklch(60% 0.02 330);
+    --color-shadow: oklch(5% 0.02 330 / 0.4); --color-shadow-strong: oklch(5% 0.02 330 / 0.6);
+  }
+}

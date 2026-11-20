@@ -3,41 +3,60 @@ import Link from "next/link";
 import { can } from "@/lib/auth/permissions";
 import { getCurrentUser } from "@/server/current-user";
 import { logoutAction } from "./auth-actions";
+import { NavTabs, type NavItem } from "./nav-tabs";
 import "./globals.css";
 
-export const metadata = { title: "Street Football Fantasy League", manifest: "/manifest.webmanifest" };
-export const viewport = { themeColor: "#1f7a4d" };
+export const metadata = {
+  title: "Street Football Fantasy League",
+  description: "Weekly street football in Nairobi, with fantasy squads on top.",
+  manifest: "/manifest.webmanifest",
+};
+export const viewport = { themeColor: "#2a0a2e" };
+
+const SECTIONS: NavItem[] = [
+  { href: "/gameweeks", label: "Games" },
+  { href: "/fantasy", label: "Fantasy" },
+  { href: "/leaderboard", label: "Leaderboard", short: "Table" },
+  { href: "/awards", label: "Awards" },
+  { href: "/bets", label: "Bets" },
+  { href: "/players", label: "Players" },
+];
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
+  const admin: NavItem[] = [];
+  if (user && can(user.role, "manageCalendar")) admin.push({ href: "/admin/calendar", label: "Calendar" });
+  if (user && can(user.role, "manageViolations")) admin.push({ href: "/admin/violations", label: "Violations" });
+  if (user && can(user.role, "inviteUsers")) admin.push({ href: "/admin/invites", label: "Invites" });
+  if (user && can(user.role, "resetPasswords")) admin.push({ href: "/admin/resets", label: "Resets" });
+  if (user && can(user.role, "setTraits")) admin.push({ href: "/admin/traits", label: "Traits" });
 
   return (
     <html lang="en">
       <body>
-        <header className="site-header">
-          <nav>
-            <Link href="/" className="brand">Street Football Fantasy</Link>
-            <Link href="/gameweeks">Games</Link>
-            <Link href="/fantasy">Fantasy</Link>
-            <Link href="/leaderboard">Leaderboard</Link>
-            <Link href="/awards">Awards</Link>
-            <Link href="/bets">Bets</Link>
-            <Link href="/players">Players</Link>
-            {user && can(user.role, "manageCalendar") && <Link href="/admin/calendar">Calendar</Link>}
-            {user && can(user.role, "manageViolations") && <Link href="/admin/violations">Violations</Link>}
-            {user && can(user.role, "inviteUsers") && <Link href="/admin/invites">Invites</Link>}
-            {user && can(user.role, "resetPasswords") && <Link href="/admin/resets">Resets</Link>}
-            {user && can(user.role, "setTraits") && <Link href="/admin/traits">Traits</Link>}
-            {user ? (
-              <>
-                {user.playerId && <Link href={`/players/${user.playerId}`}>My profile</Link>}
-                <form action={logoutAction}>
-                  <button type="submit" className="link">Sign out</button>
-                </form>
-              </>
-            ) : (
-              <Link href="/login">Sign in</Link>
-            )}
+        <header className="masthead">
+          <nav className="masthead-inner">
+            <div className="masthead-top">
+              <Link href="/" className="brand" aria-label="Street Football Fantasy, home">
+                <span className="crest" aria-hidden="true">SF</span>
+                <span>Street Football Fantasy</span>
+              </Link>
+              <div className="account">
+                {user ? (
+                  <>
+                    {user.playerId && <Link href={`/players/${user.playerId}`} className="account-link">My profile</Link>}
+                    <form action={logoutAction}>
+                      <button type="submit" className="link on-field">Sign out</button>
+                    </form>
+                  </>
+                ) : (
+                  <Link href="/login" className="account-link">Sign in</Link>
+                )}
+              </div>
+            </div>
+            <div className="tab-row">
+              <NavTabs items={SECTIONS} admin={admin} />
+            </div>
           </nav>
         </header>
         {children}

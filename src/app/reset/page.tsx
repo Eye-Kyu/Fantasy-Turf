@@ -9,7 +9,7 @@ export default async function ResetPage({ searchParams }: { searchParams: Promis
 
   if (!usable) {
     return (
-      <main>
+      <main className="narrow">
         <h1>Reset your password</h1>
         <Notices error={error ?? "reset-invalid"} />
         <p className="muted">Ask an organizer for a new reset link.</p>
@@ -17,10 +17,10 @@ export default async function ResetPage({ searchParams }: { searchParams: Promis
     );
   }
   return (
-    <main>
+    <main className="narrow">
       <h1>Choose a new password</h1>
       <Notices error={error} />
-      <form action={resetPasswordAction} className="card stack">
+      <form action={resetPasswordAction} className="card">
         <input type="hidden" name="token" value={token} />
         <label>New password<input type="password" name="password" autoComplete="new-password" minLength={8} required /></label>
         <button type="submit">Change password</button>

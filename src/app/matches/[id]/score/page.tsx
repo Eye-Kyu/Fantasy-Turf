@@ -32,7 +32,7 @@ export default async function ScorePage({ params }: { params: Promise<{ id: stri
     return (
       <main>
         <h1>Live scoring</h1>
-        <p className="muted">You can't score this match right now.</p>
+        <p className="muted">You can’t score this match right now.</p>
         <Link href={`/matches/${id}`}>Back to the match</Link>
       </main>
     );

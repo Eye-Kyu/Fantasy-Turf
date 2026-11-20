@@ -10,7 +10,7 @@ import { formatClock, formatKickoff } from "@/lib/time";
 import { requireUser } from "@/server/current-user";
 import { NotFoundError } from "@/server/errors";
 import { getMatchView, listMatchAudit } from "@/server/scoring";
-import { Notices } from "../../components";
+import { Notices, Scoreboard } from "../../components";
 import {
   changePlayerAction, claimScoringAction, lockGameweekAction, motmAction, reconcileAction, releaseScoringAction, voidEventAction,
 } from "./actions";
@@ -84,27 +84,22 @@ export default async function MatchPage({
 
   return (
     <main>
-      <h1>Match {match.number} · Gameweek {gameweek.number}</h1>
-      <p className="muted">
-        <Link href={`/gameweeks/${gameweek.id}/teams`}>← Teams</Link> · Kick-off {formatKickoff(gameweek.kickoffAt)}
-        {locked ? " · Gameweek locked" : match.reconciledAt ? " · Reconciled" : ""}
-      </p>
+      <header className="page-head">
+        <Link href={`/gameweeks/${gameweek.id}/teams`} className="crumb">Teams</Link>
+        <h1>Match {match.number}, Gameweek {gameweek.number}</h1>
+        <p>
+          Kick-off {formatKickoff(gameweek.kickoffAt)}
+          {locked ? <span className="status done">Gameweek locked</span> : match.reconciledAt ? <span className="status">Reconciled</span> : null}
+        </p>
+      </header>
       <Notices error={error} saved={saved} />
 
-      <section className="card scoreboard">
-        {teams.map((team) => (
-          <div key={team.id}>
-            <div className="muted">{team.name}</div>
-            <div className="goals">{score[team.id]}</div>
-          </div>
-        ))}
-      </section>
+      <Scoreboard teams={teams} score={score} />
 
-      <p>
-        <a href={whatsappShareUrl(shareText)} target="_blank" rel="noopener noreferrer">Share result on WhatsApp</a>
-        {" · "}
-        <a href={`/api/matches/${id}/card`} target="_blank" rel="noopener noreferrer">Result card (image)</a>
-      </p>
+      <div className="row-actions">
+        <a href={whatsappShareUrl(shareText)} target="_blank" rel="noopener noreferrer" className="button ghost">Share result on WhatsApp</a>
+        <a href={`/api/matches/${id}/card`} target="_blank" rel="noopener noreferrer" className="button ghost">Result card (image)</a>
+      </div>
 
       <section className="card">
         <h2>Live scoring</h2>
@@ -127,10 +122,11 @@ export default async function MatchPage({
             const sameTeam = teams.find((team) => team.id === event.teamId)?.players ?? [];
             return (
               <li key={event.clientId} className={event.voided ? "voided" : ""}>
-                <span>
-                  <span className="muted">{formatClock(new Date(event.occurredAt))}</span>{" "}
-                  {LABEL[event.type]} · {playerName.get(event.playerId)} <span className="muted">({teamName.get(event.teamId)})</span>
-                  {event.voided && " · voided"}
+                <span className="row-main">
+                  <span className="row-title">{LABEL[event.type]}, {playerName.get(event.playerId)}</span>
+                  <span className="meta">
+                    {formatClock(new Date(event.occurredAt))}, {teamName.get(event.teamId)}{event.voided && ". Voided"}
+                  </span>
                 </span>
                 {canReview && !event.voided && (
                   <span className="row-actions">

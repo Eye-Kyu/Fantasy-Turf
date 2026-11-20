@@ -10,6 +10,12 @@ import { getCurrentUser } from "@/server/current-user";
 import { NotFoundError } from "@/server/errors";
 import { getMatchView } from "@/server/scoring";
 
+/**
+ * The card's colours. next/og renders without the stylesheet, so these mirror
+ * --color-field and --color-field-ink in src/app/tokens.css; change them together.
+ */
+const CARD = { field: "#2a0a2e", ink: "#fbf6fb", signal: "#7cf5a2" } as const;
+
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await getCurrentUser())) return new Response("Unauthorized", { status: 401 });
   const { id } = await params;
@@ -36,9 +42,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", background: "#0b3d1e", color: "#fff", fontSize: 40 }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", background: CARD.field, color: CARD.ink, fontSize: 40 }}>
         <div style={{ fontSize: 30, opacity: 0.8 }}>{`Gameweek ${gameweek.number} · Match ${match.number}`}</div>
-        <div style={{ display: "flex", alignItems: "center", marginTop: 24, fontSize: 64, fontWeight: 700 }}>
+        <div style={{ display: "flex", alignItems: "center", marginTop: 24, fontSize: 64, fontWeight: 700, color: CARD.signal }}>
           {`${teams[0]?.name} ${score[teams[0]?.id ?? ""] ?? 0} - ${score[teams[1]?.id ?? ""] ?? 0} ${teams[1]?.name}`}
         </div>
         <div style={{ display: "flex", flexDirection: "column", marginTop: 32, fontSize: 32 }}>

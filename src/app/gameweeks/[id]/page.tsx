@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { getDb } from "@/db/client";
@@ -7,7 +6,7 @@ import { areRsvpsOpen, teamsLockAt } from "@/lib/gameweek";
 import { formatKickoff } from "@/lib/time";
 import { getGameweek, getOwnRsvp, listAttendance } from "@/server/calendar";
 import { requireUser } from "@/server/current-user";
-import { Notices } from "../../components";
+import { GameweekNav, Notices } from "../../components";
 import { attendanceAction, rsvpAction } from "../actions";
 
 const RSVP_LABEL = { GOING: "Going", NOT_GOING: "Not going", NO_RESPONSE: "No response" } as const;
@@ -37,17 +36,22 @@ export default async function GameweekPage({
 
   return (
     <main>
-      <h1>Gameweek {gameweek.number} · {gameweek.seasonName}</h1>
-      <p className="muted">
-        Kick-off {formatKickoff(gameweek.kickoffAt)}. {open ? `RSVPs close ${formatKickoff(teamsLockAt(gameweek.kickoffAt))}.` : "RSVPs are closed."}
-      </p>
+      <section className="band">
+        <h1>Gameweek {gameweek.number}</h1>
+        <p>{gameweek.seasonName}</p>
+        <dl className="band-figures">
+          <div><dt>Kick-off</dt><dd className="lead">{formatKickoff(gameweek.kickoffAt)}</dd></div>
+          <div><dt>Going</dt><dd>{going}</dd></div>
+        </dl>
+        <p>{open ? `RSVPs close ${formatKickoff(teamsLockAt(gameweek.kickoffAt))}.` : "RSVPs are closed."}</p>
+      </section>
+      <GameweekNav gameweekId={id} current="" />
       <Notices error={error} saved={saved} />
-      <p><Link href={`/gameweeks/${id}/teams`}>View teams</Link> · <Link href={`/gameweeks/${id}/points`}>Points</Link> · <Link href={`/gameweeks/${id}/fines`}>Fines</Link></p>
 
       {user.playerId && (
         <section className="card">
           <h2>Are you playing?</h2>
-          <p className="muted">Your answer: {RSVP_LABEL[mine]}</p>
+          <p className="muted">Your answer: <strong>{RSVP_LABEL[mine]}</strong></p>
           {open ? (
             <div className="row-actions">
               {(["GOING", "NOT_GOING"] as const).map((status) => (
@@ -65,12 +69,13 @@ export default async function GameweekPage({
       )}
 
       <section className="card">
-        <h2>Players · {going} going</h2>
+        <h2>Players</h2>
         <ul className="plain">
           {attendance.map((player) => (
             <li key={player.playerId}>
-              <span>
-                {player.displayName} <span className="muted">· {RSVP_LABEL[player.rsvp]}{player.attended ? " · attended" : ""}</span>
+              <span className="row-main">
+                <span className="row-title">{player.displayName}</span>
+                <span className="meta">{RSVP_LABEL[player.rsvp]}{player.attended ? ", attended" : ""}</span>
               </span>
               {isOrganizer && (
                 <span className="row-actions">

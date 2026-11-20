@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { newClientId } from "@/lib/client-id";
 import type { EventType } from "@/lib/domain";
 import { type EventView, type ScoringOp, applyOps, lastUndoable, mergeEvents, tallyScore } from "@/lib/match-events";
+import { Scoreboard } from "../../../components";
 
 interface Team {
   id: string;
@@ -166,21 +167,12 @@ export function ScoringApp({
 
   return (
     <main className="scoring">
-      <p className="muted">
-        <Link href={`/matches/${matchId}`}>← Match {matchNumber}</Link>
-      </p>
+      <Link href={`/matches/${matchId}`} className="crumb">Match {matchNumber}</Link>
 
-      <div className="card scoreboard">
-        {teams.map((team) => (
-          <div key={team.id}>
-            <div className="muted">{team.name}</div>
-            <div className="goals">{score[team.id]}</div>
-          </div>
-        ))}
-      </div>
+      <Scoreboard teams={teams} score={score} />
 
       <div className={`sync ${online ? "" : "offline"}`} role="status">
-        {online ? "Online" : "Offline: events are saved on this phone"} ·{" "}
+        {online ? "Online" : "Offline: events are saved on this phone"},{" "}
         {queue.length === 0 ? "all synced" : `${queue.length} waiting to sync`}
         {online && queue.length > 0 && (
           <button type="button" className="small ghost" onClick={() => void flush()}>Sync now</button>
@@ -196,7 +188,7 @@ export function ScoringApp({
 
       {assistFor && (
         <div className="card">
-          <h2>Assist for {nameOf.get(assistFor.playerId)}'s goal?</h2>
+          <h2>Assist for {nameOf.get(assistFor.playerId)}’s goal?</h2>
           <div className="chips">
             {teamOf(assistFor.teamId)?.players
               .filter((p) => p.playerId !== assistFor.playerId)
@@ -212,7 +204,7 @@ export function ScoringApp({
 
       <div className="teams">
         {teams.map((team) => (
-          <div key={team.id} className="card">
+          <div key={team.id} className="card team-col">
             <h2>{team.name}</h2>
             <div className="chips">
               {team.players.map((p) => (
@@ -251,8 +243,9 @@ export function ScoringApp({
         {events.length === 0 && <li className="muted">Nothing recorded yet.</li>}
         {[...events].reverse().map((event) => (
           <li key={event.clientId} className={event.voided ? "voided" : ""}>
-            <span>
-              {LABEL[event.type]} · {nameOf.get(event.playerId)} <span className="muted">({teamOf(event.teamId)?.name})</span>
+            <span className="row-main">
+              <span className="row-title">{LABEL[event.type]}, {nameOf.get(event.playerId)}</span>
+              <span className="meta">{teamOf(event.teamId)?.name}</span>
             </span>
             <span className="muted">{new Date(event.occurredAt).toLocaleTimeString("en-GB", { timeZone: "Africa/Nairobi", hour: "2-digit", minute: "2-digit" })}</span>
           </li>

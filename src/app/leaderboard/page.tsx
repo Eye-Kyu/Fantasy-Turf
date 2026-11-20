@@ -12,9 +12,12 @@ export default async function LeaderboardPage() {
 
   return (
     <main>
-      <h1>Leaderboard{season ? ` · ${season.name}` : ""}</h1>
-      <p className="muted">Real match points for every player. Fantasy squad standings come later.</p>
-      {rows.length === 0 ? <p className="muted">No points yet.</p> : <PointsTable rows={rows} />}
+      <header className="page-head">
+        <h1>Leaderboard</h1>
+        {season && <p>{season.name}</p>}
+        <p>Real match points for every player. Fantasy squad standings come later.</p>
+      </header>
+      {rows.length === 0 ? <div className="empty"><p>No points yet.</p></div> : <PointsTable rows={rows} />}
     </main>
   );
 }

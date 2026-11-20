@@ -13,7 +13,7 @@ export default async function RegisterPage({
 
   if (!usable) {
     return (
-      <main>
+      <main className="narrow">
         <h1>Join the league</h1>
         <Notices error={error ?? "invite-invalid"} />
         <p className="muted">Joining is by invite only. Ask an organizer for a new invite link.</p>
@@ -22,10 +22,10 @@ export default async function RegisterPage({
   }
 
   return (
-    <main>
+    <main className="narrow">
       <h1>Join the league</h1>
       <Notices error={error} />
-      <form action={registerAction} className="card stack">
+      <form action={registerAction} className="card">
         <input type="hidden" name="inviteToken" value={invite} />
         <label>Name<input type="text" name="displayName" autoComplete="name" minLength={2} maxLength={40} required /></label>
         <label>Email<input type="email" name="email" autoComplete="email" required /></label>

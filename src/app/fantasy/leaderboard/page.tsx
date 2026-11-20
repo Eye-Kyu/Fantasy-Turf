@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getDb } from "@/db/client";
 import { requireUser } from "@/server/current-user";
 import { getCurrentSeason } from "@/server/fantasy";
@@ -11,21 +12,27 @@ export default async function FantasyLeaderboardPage() {
 
   return (
     <main>
-      <h1>Fantasy leaderboard{season ? ` · ${season.name}` : ""}</h1>
-      <p className="muted">Counts locked gameweeks only.</p>
+      <header className="page-head">
+        <Link href="/fantasy" className="crumb">My squad</Link>
+        <h1>Fantasy leaderboard</h1>
+        {season && <p>{season.name}</p>}
+        <p>Counts locked gameweeks only.</p>
+      </header>
       {rows.length === 0 ? (
-        <p className="muted">No squads have scored yet.</p>
+        <div className="empty"><p>No squads have scored yet.</p></div>
       ) : (
-        <table>
-          <thead><tr><th>#</th><th>Manager</th><th>Last gameweek</th><th>Total</th></tr></thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={r.squadId} className={r.userId === user.userId ? "me" : undefined}>
-                <td>{i + 1}</td><td>{r.manager}</td><td>{r.lastGameweek ?? "–"}</td><td>{r.total}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Manager</th><th>Last gameweek</th><th>Total</th></tr></thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={r.squadId} className={r.userId === user.userId ? "me" : undefined}>
+                  <td className="rank">{i + 1}</td><td className="wrap"><strong>{r.manager}</strong></td><td>{r.lastGameweek ?? "–"}</td><td className="total">{r.total}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </main>
   );

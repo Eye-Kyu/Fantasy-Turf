@@ -9,7 +9,7 @@ import { formatKickoff } from "@/lib/time";
 import { getGameweek } from "@/server/calendar";
 import { requireUser } from "@/server/current-user";
 import { getGameweekTeams } from "@/server/teams";
-import { Notices } from "../../../components";
+import { GameweekNav, Notices } from "../../../components";
 import { CopyButton } from "./copy-button";
 import { addMatchAction, assignPlayerAction, deleteMatchAction, unassignPlayerAction } from "./actions";
 
@@ -65,22 +65,29 @@ export default async function TeamsPage({
 
   return (
     <main>
-      <h1>Teams · Gameweek {gameweek.number}</h1>
-      <p className="muted">
-        <Link href={`/gameweeks/${id}`}>← Gameweek {gameweek.number}</Link> · Kick-off {formatKickoff(gameweek.kickoffAt)}.{" "}
-        {locked ? "Teams are locked." : `Teams lock ${formatKickoff(teamsLockAt(gameweek.kickoffAt))}.`}
-      </p>
+      <header className="page-head">
+        <Link href={`/gameweeks/${id}`} className="crumb">Gameweek {gameweek.number}</Link>
+        <h1>Teams</h1>
+        <p>
+          Kick-off {formatKickoff(gameweek.kickoffAt)}.{" "}
+          {locked ? "Teams are locked." : `Teams lock ${formatKickoff(teamsLockAt(gameweek.kickoffAt))}.`}
+        </p>
+      </header>
+      <GameweekNav gameweekId={id} current="/teams" />
       <Notices error={error} saved={saved} />
 
-      {matches.length === 0 && <p className="muted">No matches set up yet.</p>}
+      {matches.length === 0 && <div className="empty"><p>No matches set up yet.</p></div>}
 
       {matches.map((match) => (
         <section key={match.id} className="card">
-          <h2>Match {match.number} · <Link href={`/matches/${match.id}`}>Score &amp; events</Link></h2>
+          <div className="section-head">
+            <h2>Match {match.number}</h2>
+            <Link href={`/matches/${match.id}`} className="button small ghost">Score &amp; events</Link>
+          </div>
           <div className="teams">
             {match.teams.map((team) => (
-              <div key={team.id}>
-                <h3>{team.name} <span className="muted">({team.players.length})</span></h3>
+              <div key={team.id} className="team-col">
+                <h3>{team.name} <span className="meta">{team.players.length} players</span></h3>
                 <ul className="plain">
                   {team.players.length === 0 && <li className="muted">No players yet</li>}
                   {team.players.map((player) => (
@@ -95,7 +102,7 @@ export default async function TeamsPage({
                                 key={other.id}
                                 action={assignPlayerAction}
                                 fields={{ gameweekId: id, teamId: other.id, playerId: player.playerId }}
-                                label={`→ ${other.name}`}
+                                label={`Move to ${other.name}`}
                               />
                             ))}
                           <ActionButton
@@ -112,7 +119,7 @@ export default async function TeamsPage({
             ))}
           </div>
 
-          <h3>Going, not on a team yet <span className="muted">({match.unassigned.length})</span></h3>
+          <h3>Going, not on a team yet <span className="meta">{match.unassigned.length}</span></h3>
           <ul className="plain">
             {match.unassigned.length === 0 && <li className="muted">Everyone who is going has a team.</li>}
             {match.unassigned.map((player) => (
@@ -125,7 +132,7 @@ export default async function TeamsPage({
                         key={team.id}
                         action={assignPlayerAction}
                         fields={{ gameweekId: id, teamId: team.id, playerId: player.playerId }}
-                        label={`→ ${team.name}`}
+                        label={`Add to ${team.name}`}
                         ghost={false}
                       />
                     ))}
@@ -144,7 +151,7 @@ export default async function TeamsPage({
       ))}
 
       {can(user.role, "sortTeams") && anyoneSorted && (
-        <section className="card stack">
+        <section className="card">
           <h2>Tell the group</h2>
           <p className="muted">Copy this and paste it into the WhatsApp group, or open WhatsApp with it filled in.</p>
           <textarea readOnly rows={Math.min(14, announcement.split("\n").length + 1)} value={announcement} aria-label="Teams message" />

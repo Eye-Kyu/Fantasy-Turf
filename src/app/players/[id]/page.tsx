@@ -41,26 +41,35 @@ export default async function PlayerProfilePage({
 
   return (
     <main>
-      {pictureVersion !== null && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={`/api/players/${id}/picture?v=${pictureVersion}`} alt={`${profile.displayName}'s picture`} width={96} height={96} style={{ borderRadius: "50%", objectFit: "cover" }} />
-      )}
-      <h1>{profile.displayName}</h1>
-      <Notices error={error} saved={saved} />
-
-      <section className="card">
-        <dl className="stats">
-          <div><dt>Rating</dt><dd>{Math.round(profile.rating)}</dd></div>
+      <section className="band">
+        <div className="profile-head">
+          {pictureVersion !== null ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={`/api/players/${id}/picture?v=${pictureVersion}`} alt={`${profile.displayName}’s picture`} width={96} height={96} className="avatar" />
+          ) : (
+            <span className="avatar-blank" aria-hidden="true">{profile.displayName.slice(0, 1).toUpperCase()}</span>
+          )}
+          <h1>{profile.displayName}</h1>
+        </div>
+        <dl className="band-figures">
+          <div><dt>Rating</dt><dd className="lead">{Math.round(profile.rating)}</dd></div>
           <div><dt>Price</dt><dd>{profile.price}</dd></div>
           <div><dt>Streak</dt><dd>{profile.currentStreak}</dd></div>
         </dl>
+      </section>
+      <Notices error={error} saved={saved} />
+
+      <section className="card">
         {season && (
-          <dl className="stats" aria-label={`${season.name} stats`}>
-            <div><dt>Points</dt><dd>{seasonStats?.total ?? 0}</dd></div>
-            <div><dt>Goals</dt><dd>{seasonStats?.goals ?? 0}</dd></div>
-            <div><dt>Assists</dt><dd>{seasonStats?.assists ?? 0}</dd></div>
-            <div><dt>Matches</dt><dd>{seasonStats?.matchesPlayed ?? 0}</dd></div>
-          </dl>
+          <>
+            <h2>{season.name}</h2>
+            <dl className="stats" aria-label={`${season.name} stats`}>
+              <div><dt>Points</dt><dd>{seasonStats?.total ?? 0}</dd></div>
+              <div><dt>Goals</dt><dd>{seasonStats?.goals ?? 0}</dd></div>
+              <div><dt>Assists</dt><dd>{seasonStats?.assists ?? 0}</dd></div>
+              <div><dt>Matches</dt><dd>{seasonStats?.matchesPlayed ?? 0}</dd></div>
+            </dl>
+          </>
         )}
         {profile.bio && <p>{profile.bio}</p>}
         <div>
@@ -73,18 +82,21 @@ export default async function PlayerProfilePage({
       </section>
 
       {partnerships.length > 0 && (
-        <section>
+        <section className="section">
           <h2>Best partnerships</h2>
-          <ul className="plain">
+          <ul className="plain card">
             {partnerships.map((p) => (
-              <li key={`${p.assisterId}-${p.scorerId}`}>{p.assisterName} → {p.scorerName} · {p.goals} goal{p.goals > 1 ? "s" : ""}</li>
+              <li key={`${p.assisterId}-${p.scorerId}`}>
+                <span className="row-title">{p.assisterName} to {p.scorerName}</span>
+                <span className="row-figure">{p.goals} goal{p.goals > 1 ? "s" : ""}</span>
+              </li>
             ))}
           </ul>
         </section>
       )}
 
       {playerFines.length > 0 && (
-        <section>
+        <section className="section">
           <h2>Fines</h2>
           <FineList fines={playerFines} />
         </section>
