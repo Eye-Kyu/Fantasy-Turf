@@ -134,3 +134,40 @@ export const updateViolationSchema = z.object({
   // An unchecked checkbox is simply absent from the form.
   isActive: z.preprocess((value) => value === "on", z.boolean()),
 });
+
+// --- Fantasy ---
+
+const asArray = (value: unknown) => (value === undefined ? [] : Array.isArray(value) ? value : [value]);
+
+export const squadSchema = z.object({
+  seasonId: z.uuid(),
+  playerIds: z.preprocess(asArray, z.array(z.uuid()).length(6)),
+});
+
+/**
+ * The lineup form has one `slot_<playerId>` field per squad player (starter, bench1 or
+ * bench2) and a captain; it becomes starter ids plus the bench in order.
+ */
+export const lineupSchema = z
+  .object({ gameweekId: z.uuid(), captainId: z.uuid() })
+  .catchall(z.string())
+  .transform((form, ctx) => {
+    const starterIds: string[] = [];
+    const bench: (string | undefined)[] = [];
+    for (const [key, value] of Object.entries(form)) {
+      if (!key.startsWith("slot_")) continue;
+      const playerId = key.slice("slot_".length);
+      if (!z.uuid().safeParse(playerId).success) continue;
+      if (value === "starter") starterIds.push(playerId);
+      else if (value === "bench1") bench[0] = playerId;
+      else if (value === "bench2") bench[1] = playerId;
+      else ctx.addIssue({ code: "custom", message: "Unknown slot" });
+    }
+    if (!bench[0] || !bench[1]) {
+      ctx.addIssue({ code: "custom", message: "Pick a first and second substitute" });
+      return z.NEVER;
+    }
+    return { gameweekId: form.gameweekId, captainId: form.captainId, starterIds, benchIds: [bench[0], bench[1]] };
+  });
+
+export const transferSchema = z.object({ seasonId: z.uuid(), playerOutId: z.uuid(), playerInId: z.uuid() });

@@ -25,6 +25,13 @@ const ERRORS = {
   "fine-invalid": "That fine isn't valid: the violation is no longer in use, or the match is from another gameweek.",
   "violation-exists": "A violation with that name already exists.",
   "season-exists": "A season with that name already exists.",
+  "fantasy-squad-exists": "You already have a squad this season.",
+  "fantasy-squad-invalid": "That squad or lineup isn't valid: pick 6 different players, 4 starters, 2 bench players and a starting captain.",
+  "fantasy-over-budget": "That's over your budget.",
+  "fantasy-lineup-locked": "This gameweek has locked, so the lineup can no longer change.",
+  "fantasy-no-gameweek": "There is no upcoming gameweek yet.",
+  "fantasy-transfer-used": "You've already used your transfer for this gameweek.",
+  "fantasy-no-squad": "Pick your squad first.",
   "trait-exists": "A trait with that name already exists.",
 } as const;
 
@@ -45,6 +52,9 @@ const NOTICES = {
   teams: "Teams updated.",
   attendance: "Attendance saved.",
   "season-created": "Season created.",
+  "squad-created": "Squad created.",
+  lineup: "Lineup saved.",
+  transfer: "Transfer made.",
   "gameweek-created": "Gameweek added.",
 } as const;
 

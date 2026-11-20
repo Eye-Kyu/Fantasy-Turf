@@ -111,8 +111,18 @@ Fantasy squads are fully decoupled from game-day teams.
 
 - **Squad size**: 4 starters + 2 bench (6 total). **Transfer limit**: 1 per gameweek.
 - **Captain**: one starter per gameweek scores 2x (change at lineup deadline).
-- Player price floats with form/ownership (FPL-style), starting from the rating.
-  **Budget cap not yet defined.**
+- **Budget 50M** per squad (`FANTASY_BUDGET`). Price = 8.0M at rating 1000, +1M per
+  50 rating, clamped 4-15M; recomputed when a gameweek locks (`src/lib/rating.ts`).
+  Transfers sell and buy at current prices; the squad keeps a `bank`.
+- **Rating deltas per gameweek** (`RATING` in constants): goal +10, assist +6, played +4,
+  attendance streak +2 per consecutive gameweek (cap +8), RSVP Going but no-show -12,
+  other absence -4, each fine point -5; clamped 600-1500. Applied once, inside
+  `lockGameweek` (`src/server/ratings.ts`).
+- **Lineups** are per gameweek; the deadline is the team lock. `src/server/fantasy.ts`
+  copies the previous lineup forward for squads that did not touch it. A starter who did
+  not play is replaced by the first bench player who played (`src/lib/fantasy.ts`).
+  Fantasy points are computed on demand (`fantasy-points.ts`); the leaderboard counts
+  locked gameweeks only. Pages: `/fantasy`, `/fantasy/leaderboard`.
 
 ## Data capture and integrity
 
@@ -255,8 +265,8 @@ schema or code; reinstating them means the changes noted.
 - [ ] Point values: clean sheet band, saves/tackles, MOTM
 - [ ] Late drop-outs after the lock: stay on their team and play short, or may the
       organizer substitute someone (and who may do that after the lock)?
-- [ ] Starting prices (from rating) and the fantasy budget cap
-- [ ] Rating constants (K-factor, starting rating, team aggregation) and price mapping
+- [ ] Rating constants and price mapping are first defaults (step 8); tune after real games. Ratings are not recomputed if a fine or override changes after the lock
+- [ ] A squad created after a gameweek locks does not score it; confirm that is acceptable
 - [ ] Bet starting balance and stake/payout mechanics
 - [ ] WhatsApp integration approach (Business API vs. manual share links)
 - [ ] Organizer RSVP/attendance changes are not audited yet (add when the audit log is built, step 5)
@@ -312,6 +322,6 @@ in `.env` at it. Never edit an applied migration; change the schema and run
    (done: `src/server/points.ts` computes player points from events, attendance and fines on every request (nothing stored), via `breakdownMatch` in `src/lib/scoring/engine.ts`. Pages: `/gameweeks/[id]/points` (provisional until the gameweek is locked), `/leaderboard` (season player points), season stats on profiles. Save and key-tackle points stay 0 until decided)
 7. Fines: violation catalog seed, issue/void flow, applied to gameweek scores
    (done: `src/server/fines.ts`; organizers load the standard violations and edit the catalog at `/admin/violations`, issue and void fines at `/gameweeks/[id]/fines`; fines show on profiles and feed the points page. Fines can still be issued after a gameweek is locked (organizers only, who and when are recorded); they are not in the event audit log)
-8. Ratings update, fantasy squads, auto-sub, captain, transfers, leaderboards
+8. Ratings update, fantasy squads, auto-sub, captain, transfers, leaderboards (done)
 9. Partnerships, streaks, awards, WhatsApp notifications and result cards
 10. Betting

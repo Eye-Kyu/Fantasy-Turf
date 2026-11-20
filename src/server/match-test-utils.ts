@@ -31,7 +31,7 @@ export async function setupMatch(db: DbExecutor) {
   }
   const matchId = view!.id;
   await claimScoring(db, scorer.actor, matchId, playTime);
-  return { organizer, scorer, gameweek, matchId, teamA: teamA.id, teamB: teamB.id, a1: a1!, a2: a2!, b1: b1!, b2: b2! };
+  return { organizer, scorer, season, gameweek, matchId, teamA: teamA.id, teamB: teamB.id, a1: a1!, a2: a2!, b1: b1!, b2: b2! };
 }
 
 export const goalInput = (matchId: string, playerId: string, clientId = uuid()) =>

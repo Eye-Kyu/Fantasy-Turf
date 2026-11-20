@@ -19,6 +19,8 @@ export const fantasySquads = pgTable(
     // a transfer sells at the current price and buys at the current price, so price
     // moves become spendable money only when a player is sold.
     bank: numeric({ precision: 5, scale: 1 }).notNull(),
+    // A squad never scores gameweeks that locked before it existed.
+    createdAt: createdAt(),
   },
   (t) => [unique().on(t.userId, t.seasonId)],
 );

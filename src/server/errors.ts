@@ -111,3 +111,23 @@ export class InvalidFineError extends Error {
     this.name = "InvalidFineError";
   }
 }
+
+/** Why a fantasy action was refused; the code picks the message shown. */
+export type FantasyErrorCode =
+  | "squad-exists"
+  | "squad-invalid" // wrong number of players, duplicates, unknown players, bad lineup
+  | "over-budget"
+  | "lineup-locked"
+  | "no-gameweek" // no upcoming gameweek to apply it to
+  | "transfer-used"
+  | "no-squad";
+
+export class FantasyError extends Error {
+  constructor(
+    readonly code: FantasyErrorCode,
+    message: string,
+  ) {
+    super(message);
+    this.name = "FantasyError";
+  }
+}
