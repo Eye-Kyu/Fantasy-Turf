@@ -1,13 +1,13 @@
 import { loginAction } from "../auth-actions";
 import { Notices } from "../components";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {
+  const { error, saved } = await searchParams;
 
   return (
     <main>
       <h1>Sign in</h1>
-      <Notices error={error} />
+      <Notices error={error} saved={saved} />
       <form action={loginAction} className="card stack">
         <label>Email or phone number<input type="text" name="identifier" autoComplete="username" required /></label>
         <label>Password<input type="password" name="password" autoComplete="current-password" required /></label>

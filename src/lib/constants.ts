@@ -40,6 +40,12 @@ export const EVENT_POINTS: Record<EventType, number> = {
 };
 
 /**
+ * Extra points that are not live events. The man of the match is chosen by an organizer
+ * for each match; a late drop-out is someone put on a team who then did not play.
+ */
+export const BONUS_POINTS = { MAN_OF_THE_MATCH: 5, LATE_DROPOUT: -7 } as const;
+
+/**
  * Game-day teams lock, and RSVPs close, this many hours before kick-off. Sorting
  * into teams happens before this moment; nobody is moved after it.
  */

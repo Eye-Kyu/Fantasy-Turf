@@ -35,3 +35,22 @@ export function matchSummaryText(input: {
 }
 
 export const whatsappShareUrl = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+/** The "teams are set" message for the group: every match with its two teams. */
+export function teamsAnnouncementText(input: {
+  gameweekNumber: number;
+  kickoff: string;
+  matches: readonly { number: number; teams: readonly { name: string; players: readonly string[] }[] }[];
+  url?: string;
+}): string {
+  const lines = [`📋 Teams are set for Gameweek ${input.gameweekNumber}`, `Kick-off: ${input.kickoff}`];
+  for (const match of input.matches) {
+    lines.push("");
+    if (input.matches.length > 1) lines.push(`Match ${match.number}`);
+    for (const team of match.teams) {
+      lines.push(`${team.name}: ${team.players.length > 0 ? team.players.join(", ") : "(no players yet)"}`);
+    }
+  }
+  if (input.url) lines.push("", input.url);
+  return lines.join("\n");
+}

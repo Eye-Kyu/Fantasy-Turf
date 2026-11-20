@@ -7,6 +7,7 @@
 import { asc, eq } from "drizzle-orm";
 import type { DbExecutor } from "@/db/client";
 import { attendances, fines, gameDayTeamPlayers, gameweeks, matchEvents, matches, players } from "@/db/schema";
+import { BONUS_POINTS } from "@/lib/constants";
 import { applyFines } from "@/lib/scoring/fines";
 import { type PlayerMatchBreakdown, type ScoringEvent, breakdownMatch } from "@/lib/scoring/engine";
 
@@ -22,6 +23,8 @@ export interface PlayerGameweekPoints {
   bonusPoints: number;
   /** Points deducted by fines, as a positive number. */
   finePoints: number;
+  /** Points lost for being put on a team and then not playing (positive); counted once the match is reconciled. */
+  dropoutPoints: number;
   total: number;
 }
 
@@ -33,7 +36,7 @@ export interface GameweekPoints {
 
 const emptyRow = (playerId: string, displayName: string): PlayerGameweekPoints => ({
   playerId, displayName, matchesPlayed: 0, goals: 0, assists: 0, saves: 0, keyTackles: 0,
-  eventPoints: 0, bonusPoints: 0, finePoints: 0, total: 0,
+  eventPoints: 0, bonusPoints: 0, finePoints: 0, dropoutPoints: 0, total: 0,
 });
 
 /**
@@ -47,6 +50,7 @@ export async function getGameweekPoints(db: DbExecutor, gameweekId: string): Pro
   const [gameweek] = await db.select({ lockedAt: gameweeks.lockedAt }).from(gameweeks).where(eq(gameweeks.id, gameweekId));
   const final = Boolean(gameweek?.lockedAt);
 
+  const matchRows = await db.select({ id: matches.id, reconciledAt: matches.reconciledAt, motmPlayerId: matches.motmPlayerId }).from(matches).where(eq(matches.gameweekId, gameweekId));
   const members = await db
     .select({ matchId: gameDayTeamPlayers.matchId, playerId: gameDayTeamPlayers.playerId, teamId: gameDayTeamPlayers.gameDayTeamId })
     .from(gameDayTeamPlayers)
@@ -79,6 +83,16 @@ export async function getGameweekPoints(db: DbExecutor, gameweekId: string): Pro
       .filter((m) => m.matchId === matchId && (attended.has(m.playerId) || withEvents.has(m.playerId)))
       .map((m) => ({ playerId: m.playerId, gameDayTeamId: m.teamId }));
     const teamIds = [...new Set(members.filter((m) => m.matchId === matchId).map((m) => m.teamId))];
+    const matchInfo = matchRows.find((m) => m.id === matchId);
+    const playedHere = new Set(roster.map((r) => r.playerId));
+    // A reconciled match is final enough to say who never showed up.
+    if (matchInfo?.reconciledAt) {
+      for (const m of members.filter((x) => x.matchId === matchId && !playedHere.has(x.playerId))) {
+        const row = rowsById.get(m.playerId) ?? emptyRow(m.playerId, "");
+        row.dropoutPoints += -BONUS_POINTS.LATE_DROPOUT;
+        rowsById.set(m.playerId, row);
+      }
+    }
 
     for (const [playerId, b] of breakdownMatch(events, roster, teamIds) as Map<string, PlayerMatchBreakdown>) {
       const row = rowsById.get(playerId) ?? emptyRow(playerId, "");
@@ -89,6 +103,7 @@ export async function getGameweekPoints(db: DbExecutor, gameweekId: string): Pro
       row.keyTackles += b.keyTackles;
       row.eventPoints += b.eventPoints;
       row.bonusPoints += b.bonusPoints;
+      if (matchInfo?.motmPlayerId === playerId) row.bonusPoints += BONUS_POINTS.MAN_OF_THE_MATCH;
       rowsById.set(playerId, row);
     }
   }
@@ -107,7 +122,7 @@ export async function getGameweekPoints(db: DbExecutor, gameweekId: string): Pro
   const rows = [...rowsById.values()].map((row) => ({
     ...row,
     displayName: names.get(row.playerId) ?? "Unknown player",
-    total: totals.get(row.playerId) ?? 0,
+    total: (totals.get(row.playerId) ?? 0) - row.dropoutPoints,
   }));
   rows.sort((a, b) => b.total - a.total || a.displayName.localeCompare(b.displayName));
   return { final, rows };
@@ -130,7 +145,7 @@ export async function getSeasonTotals(db: DbExecutor, seasonId: string): Promise
   for (const gameweekId of await playedGameweekIds(db, seasonId)) {
     for (const row of (await getGameweekPoints(db, gameweekId)).rows) {
       const sum = totals.get(row.playerId) ?? emptyRow(row.playerId, row.displayName);
-      for (const key of ["matchesPlayed", "goals", "assists", "saves", "keyTackles", "eventPoints", "bonusPoints", "finePoints", "total"] as const) {
+      for (const key of ["matchesPlayed", "goals", "assists", "saves", "keyTackles", "eventPoints", "bonusPoints", "finePoints", "dropoutPoints", "total"] as const) {
         sum[key] += row[key];
       }
       totals.set(row.playerId, sum);

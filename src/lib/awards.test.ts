@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { leaders, longestStreak, monthKey } from "./awards";
-import { matchSummaryText, whatsappShareUrl } from "./share";
+import { matchSummaryText, teamsAnnouncementText, whatsappShareUrl } from "./share";
 
 describe("awards helpers", () => {
   it("finds tied leaders and ignores zero", () => {
@@ -29,5 +29,19 @@ describe("share text", () => {
     expect(text).toContain("• Otieno: 1 assist");
     expect(text).not.toContain("Quiet");
     expect(whatsappShareUrl("a b")).toBe("https://wa.me/?text=a%20b");
+  });
+});
+
+describe("teams announcement", () => {
+  it("lists each team", () => {
+    const text = teamsAnnouncementText({
+      gameweekNumber: 4,
+      kickoff: "Sat 28 Nov, 16:00",
+      matches: [{ number: 1, teams: [{ name: "Team A", players: ["Juma", "Otieno"] }, { name: "Team B", players: [] }] }],
+    });
+    expect(text).toContain("Teams are set for Gameweek 4");
+    expect(text).toContain("Team A: Juma, Otieno");
+    expect(text).toContain("Team B: (no players yet)");
+    expect(text).not.toContain("Match 1"); // a single match needs no heading
   });
 });

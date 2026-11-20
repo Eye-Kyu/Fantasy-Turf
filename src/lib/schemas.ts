@@ -180,3 +180,13 @@ export const betSchema = z.object({
   pickId: z.uuid(),
   stake: z.coerce.number().int(),
 });
+
+export const motmSchema = z.object({ matchId: z.uuid(), playerId: z.preprocess((v) => (v === "" ? null : v), z.uuid().nullable()) });
+
+// --- Password reset ---
+
+export const resetRequestSchema = z.object({ userId: z.uuid() });
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1).max(200),
+  password: z.string().min(8, "Use at least 8 characters").max(200),
+});

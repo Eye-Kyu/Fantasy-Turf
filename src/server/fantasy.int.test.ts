@@ -99,7 +99,7 @@ describe("fantasy squads", () => {
       const ids = six(s);
       await createSquad(db, manager.actor, { seasonId: s.season.id, playerIds: ids }, early);
       await setLineup(db, manager.actor, { gameweekId: s.gameweek.id, starterIds: [s.a1.playerId, s.a2.playerId, s.b1.playerId, s.b2.playerId], benchIds: [s.scorer.playerId, s.organizer.playerId], captainId: s.a1.playerId }, early);
-      for (const p of [s.a1, s.a2, s.b1]) {
+      for (const p of [s.a1, s.a2, s.b1, s.b2]) {
         await confirmAttendance(db, s.organizer.actor, { gameweekId: s.gameweek.id, playerId: p.playerId, attended: true });
       }
       await recordEvent(db, s.scorer.actor, goalInput(s.matchId, s.a1.playerId), playTime);

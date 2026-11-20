@@ -12,7 +12,7 @@ import { NotFoundError } from "@/server/errors";
 import { getMatchView, listMatchAudit } from "@/server/scoring";
 import { Notices } from "../../components";
 import {
-  changePlayerAction, claimScoringAction, lockGameweekAction, reconcileAction, releaseScoringAction, voidEventAction,
+  changePlayerAction, claimScoringAction, lockGameweekAction, motmAction, reconcileAction, releaseScoringAction, voidEventAction,
 } from "./actions";
 
 const LABEL = { GOAL: "Goal", ASSIST: "Assist", SAVE: "Save", KEY_TACKLE: "Key tackle" } as const;
@@ -158,6 +158,16 @@ export default async function MatchPage({
             Check the log above, fix anything wrong, then confirm. Changing events after confirming asks for another review.
             Mark who turned up on the <Link href={`/gameweeks/${gameweek.id}`}>gameweek page</Link> first, so team bonuses reach everyone who played.
           </p>
+          <form action={motmAction} className="row-actions">
+            <input type="hidden" name="matchId" value={id} />
+            <label>Man of the match (+5)
+              <select name="playerId" defaultValue={match.motmPlayerId ?? ""}>
+                <option value="">None</option>
+                {teams.flatMap((t) => t.players).map((p) => <option key={p.playerId} value={p.playerId}>{p.displayName}</option>)}
+              </select>
+            </label>
+            <button type="submit" className="small">Save</button>
+          </form>
           <div className="row-actions">
             {!locked && <Post action={reconcileAction} fields={{ matchId: id }} label={match.reconciledAt ? "Re-confirm match" : "Confirm match"} ghost={false} />}
             {!locked && (

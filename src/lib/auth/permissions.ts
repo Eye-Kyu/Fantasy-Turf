@@ -15,6 +15,7 @@ export type Action =
   | "manageViolations"
   | "reconcileMatches"
   | "inviteUsers"
+  | "resetPasswords"
   | "manageCalendar"
   | "setTraits"
   | "manageUsers";
@@ -26,6 +27,7 @@ const ORGANIZER_ACTIONS: readonly Action[] = [
   "manageViolations",
   "reconcileMatches",
   "inviteUsers",
+  "resetPasswords",
   "manageCalendar",
 ];
 

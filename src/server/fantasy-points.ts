@@ -12,7 +12,7 @@ import { getGameweekPoints } from "./points";
 
 async function formsFor(db: DbExecutor, gameweekId: string): Promise<Map<string, PlayerForm>> {
   const { rows } = await getGameweekPoints(db, gameweekId);
-  return new Map(rows.map((r) => [r.playerId, { total: r.total, finePoints: r.finePoints, played: r.matchesPlayed > 0 }]));
+  return new Map(rows.map((r) => [r.playerId, { total: r.total, finePoints: r.finePoints + r.dropoutPoints, played: r.matchesPlayed > 0 }]));
 }
 
 async function lineupMembers(db: DbExecutor, lineupId: string): Promise<LineupMember[]> {

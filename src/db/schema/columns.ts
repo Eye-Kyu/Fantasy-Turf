@@ -1,4 +1,4 @@
-import { timestamp, uuid } from "drizzle-orm/pg-core";
+import { customType, timestamp, uuid } from "drizzle-orm/pg-core";
 
 // Shared column builders. They are functions so every table gets its own builder
 // instance (Drizzle builders must not be shared between tables).
@@ -11,3 +11,8 @@ export const timestamptz = () => timestamp({ withTimezone: true });
 
 /** Row creation time, set by the database. */
 export const createdAt = () => timestamptz().notNull().defaultNow();
+
+/** Binary data (`bytea`), read and written as a Node Buffer. */
+export const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => "bytea",
+});

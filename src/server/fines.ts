@@ -3,6 +3,7 @@
  * organizer; it is voided, never deleted, and the points are copied from the catalog at
  * issue time so editing the catalog never rewrites past scores.
  */
+import { refreshAfterCorrection } from "./corrections";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { DbExecutor } from "@/db/client";
@@ -104,15 +105,17 @@ export async function issueFine(
     note: input.note ?? null,
     issuedById: actor.userId,
   });
+  await refreshAfterCorrection(db, input.gameweekId);
 }
 
 /** Voids a fine (issued by mistake, or overturned). Voiding twice is harmless. */
 export async function voidFine(db: DbExecutor, actor: Actor, fineId: string, now = new Date()): Promise<void> {
   assertCan(actor, "issueFines");
-  const [fine] = await db.select({ voidedAt: fines.voidedAt }).from(fines).where(eq(fines.id, fineId));
+  const [fine] = await db.select({ voidedAt: fines.voidedAt, gameweekId: fines.gameweekId }).from(fines).where(eq(fines.id, fineId));
   if (!fine) throw new NotFoundError("Fine");
   if (fine.voidedAt) return;
   await db.update(fines).set({ voidedAt: now, voidedById: actor.userId }).where(eq(fines.id, fineId));
+  await refreshAfterCorrection(db, fine.gameweekId);
 }
 
 const issuer = alias(users, "issuer");

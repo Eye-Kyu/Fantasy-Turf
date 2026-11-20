@@ -7,9 +7,10 @@ import { listSeasons } from "@/server/calendar";
 import { listPlayerFines } from "@/server/fines";
 import { getPlayerProfile, listTraits } from "@/server/players";
 import { getSeasonTotals } from "@/server/points";
+import { getPictureVersion } from "@/server/pictures";
 import { getPartnerships } from "@/server/stats";
 import { FineList, Notices } from "../../components";
-import { setTraitsAction, updateProfileAction } from "../actions";
+import { removePictureAction, setTraitsAction, updateProfileAction, uploadPictureAction } from "../actions";
 
 export default async function PlayerProfilePage({
   params,
@@ -32,6 +33,7 @@ export default async function PlayerProfilePage({
   const canSetTraits = can(user.role, "setTraits");
   const allTraits = canSetTraits ? await listTraits(db) : [];
   const playerFines = await listPlayerFines(db, id);
+  const pictureVersion = await getPictureVersion(db, id);
   const partnerships = await getPartnerships(db, { playerId: id, limit: 5 });
   const [season] = await listSeasons(db);
   const seasonStats = season ? (await getSeasonTotals(db, season.id)).find((row) => row.playerId === id) : undefined;
@@ -39,6 +41,10 @@ export default async function PlayerProfilePage({
 
   return (
     <main>
+      {pictureVersion !== null && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`/api/players/${id}/picture?v=${pictureVersion}`} alt={`${profile.displayName}'s picture`} width={96} height={96} style={{ borderRadius: "50%", objectFit: "cover" }} />
+      )}
       <h1>{profile.displayName}</h1>
       <Notices error={error} saved={saved} />
 
@@ -86,6 +92,16 @@ export default async function PlayerProfilePage({
 
       {isOwner && (
         <section className="card">
+          <h2>Your picture</h2>
+          <form action={uploadPictureAction.bind(null, profile.id)} className="stack">
+            <label>Choose a photo (JPG, PNG or WebP, up to 2 MB)<input type="file" name="picture" accept="image/jpeg,image/png,image/webp" required /></label>
+            <button type="submit">Upload picture</button>
+          </form>
+          {pictureVersion !== null && (
+            <form action={removePictureAction.bind(null, profile.id)}>
+              <button type="submit" className="small ghost">Remove picture</button>
+            </form>
+          )}
           <h2>Edit your profile</h2>
           <form action={updateProfileAction.bind(null, profile.id)} className="stack">
             <label>Name<input type="text" name="displayName" defaultValue={profile.displayName} minLength={2} maxLength={40} required /></label>

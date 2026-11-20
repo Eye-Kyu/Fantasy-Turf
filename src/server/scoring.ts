@@ -17,6 +17,7 @@ import type { EventView, ScoringOp } from "@/lib/match-events";
 import { type Actor, assertCan } from "./actor";
 import { NotFoundError, ScoringError } from "./errors";
 import { settleGameweekBets } from "./betting";
+import { refreshAfterCorrection } from "./corrections";
 import { applyGameweekRatings } from "./ratings";
 
 type AuditAction = "CREATE" | "VOID" | "EDIT" | "OVERRIDE";
@@ -164,6 +165,7 @@ async function recordEventUnit(
     .returning();
   await audit(db, event!.id, actor.userId, "CREATE", override, null, { type: event!.type, playerId: event!.playerId, teamId });
   await reopenReconciliation(db, ctx);
+  if (override) await refreshAfterCorrection(db, ctx.gameweek.id);
 }
 
 /** Voids an event (and, for a goal, its assist). Voiding twice is harmless. */
@@ -188,6 +190,7 @@ async function voidEventUnit(
     await audit(db, target.id, actor.userId, "VOID", override, { voided: false }, { voided: true });
   }
   if (targets.length > 0) await reopenReconciliation(db, ctx);
+  if (override && targets.length > 0) await refreshAfterCorrection(db, ctx.gameweek.id);
 }
 
 /**
@@ -224,6 +227,7 @@ async function changeEventPlayerUnit(
   await db.update(matchEvents).set({ playerId: input.playerId }).where(eq(matchEvents.id, event.id));
   await audit(db, event.id, actor.userId, "EDIT", override, { playerId: event.playerId }, { playerId: input.playerId });
   await reopenReconciliation(db, ctx);
+  if (override) await refreshAfterCorrection(db, ctx.gameweek.id);
 }
 
 // The public versions run inside one transaction so an event and its audit row are
@@ -295,6 +299,21 @@ export async function reconcileMatch(db: DbExecutor, actor: Actor, matchId: stri
   if (!areTeamsLocked(ctx.gameweek.kickoffAt, now)) throw new ScoringError("not-open", "The match has not been played yet");
   if (ctx.gameweek.lockedAt) throw new ScoringError("locked", "This gameweek is already locked");
   await db.update(matches).set({ reconciledById: actor.userId, reconciledAt: now }).where(eq(matches.id, matchId));
+}
+
+/**
+ * Sets (or clears, with null) the man of the match: worth BONUS_POINTS.MAN_OF_THE_MATCH.
+ * Organizers who are not playing in the match; allowed after the lock as a correction.
+ */
+export async function setManOfTheMatch(db: DbExecutor, actor: Actor, matchId: string, playerId: string | null) {
+  assertCan(actor, "reconcileMatches");
+  await db.transaction(async (tx) => {
+    const ctx = await loadContext(tx, matchId);
+    if (ctx.userIdsPlaying.has(actor.userId)) throw new ScoringError("playing", "You play in this match");
+    if (playerId && !ctx.teamOfPlayer.has(playerId)) throw new ScoringError("invalid-event", "That player is not on a team in this match");
+    await tx.update(matches).set({ motmPlayerId: playerId }).where(eq(matches.id, matchId));
+    await refreshAfterCorrection(tx, ctx.gameweek.id);
+  });
 }
 
 /** Locks the gameweek once every match is reconciled, then updates ratings. Later changes become audited overrides. */

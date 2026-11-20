@@ -1,9 +1,9 @@
 "use server";
 
 import { getDb } from "@/db/client";
-import { changeEventPlayerSchema, eventActionSchema, gameweekActionSchema, matchActionSchema } from "@/lib/schemas";
+import { changeEventPlayerSchema, motmSchema, eventActionSchema, gameweekActionSchema, matchActionSchema } from "@/lib/schemas";
 import {
-  changeEventPlayer, claimScoring, lockGameweek, reconcileMatch, releaseScoring, voidEvent,
+  changeEventPlayer, claimScoring, lockGameweek, reconcileMatch, releaseScoring, setManOfTheMatch, voidEvent,
 } from "@/server/scoring";
 import { runFormAction } from "../../action-helper";
 
@@ -32,4 +32,8 @@ export async function reconcileAction(formData: FormData): Promise<void> {
 
 export async function lockGameweekAction(formData: FormData): Promise<void> {
   await runFormAction(formData, { schema: lockSchema, page, notice: "gameweek-locked", change: (actor, i) => lockGameweek(getDb(), actor, i.gameweekId) });
+}
+
+export async function motmAction(formData: FormData): Promise<void> {
+  await runFormAction(formData, { schema: motmSchema, page, notice: "motm", change: (actor, i) => setManOfTheMatch(getDb(), actor, i.matchId, i.playerId) });
 }

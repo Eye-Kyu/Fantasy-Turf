@@ -20,6 +20,7 @@ interface PointsRow {
   assists: number;
   bonusPoints: number;
   finePoints: number;
+  dropoutPoints: number;
   total: number;
 }
 
@@ -29,14 +30,14 @@ export function PointsTable({ rows }: { rows: PointsRow[] }) {
     <div className="table-wrap">
       <table>
         <thead>
-          <tr><th>Player</th><th title="Matches played">MP</th><th title="Goals">G</th><th title="Assists">A</th><th title="Team bonus">Bonus</th><th title="Fines">Fines</th><th>Pts</th></tr>
+          <tr><th>Player</th><th title="Matches played">MP</th><th title="Goals">G</th><th title="Assists">A</th><th title="Team bonus">Bonus</th><th title="Fines and late drop-outs">Deductions</th><th>Pts</th></tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.playerId}>
               <td><a href={`/players/${row.playerId}`}>{row.displayName}</a></td>
               <td>{row.matchesPlayed}</td><td>{row.goals}</td><td>{row.assists}</td>
-              <td>{row.bonusPoints}</td><td>{row.finePoints > 0 ? `−${row.finePoints}` : 0}</td>
+              <td>{row.bonusPoints}</td><td title={row.dropoutPoints > 0 ? `includes ${row.dropoutPoints} for a late drop-out` : undefined}>{row.finePoints + row.dropoutPoints > 0 ? `−${row.finePoints + row.dropoutPoints}` : 0}</td>
               <td><strong>{row.total}</strong></td>
             </tr>
           ))}

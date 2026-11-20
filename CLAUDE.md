@@ -40,6 +40,9 @@ Enforce permissions at the API boundary, never in the UI alone. The rules live i
 place, `src/lib/auth/permissions.ts` (`can(role, action)`), and every service function
 checks the actor itself, so a page cannot forget the check.
 
+**Played** (decided): everyone an organizer marked present counts as having played (a recorded
+event also proves presence). **Squads created after a lock score nothing for that gameweek** (decided).
+
 Registration is **invite-only**: organizers and the super admin create single-use invite
 links (`/admin/invites`, valid 7 days) and share them (e.g. on WhatsApp). Registering
 always creates a `MANAGER`. Players sign in with email **or** phone number (stored in
@@ -50,8 +53,10 @@ Security in place: scrypt password hashes, hashed session and invite tokens, Htt
 SameSite cookies, sign-in lockout (5 failures per identifier per 15 minutes, in
 `src/lib/auth/policy.ts`), constant-time-ish rejection of unknown accounts, and browser
 security headers in `next.config.ts`. Email verification is deliberately not needed
-because only invited people can register. Password reset is done by an organizer for
-now (see Open items).
+because only invited people can register. **Password reset** is organizer-issued: `/admin/resets` creates a one-time link
+(24 hours, newest link only) that the organizer sends privately; using it ends all the
+person's sessions and clears their lockout. Organizers can reset managers, only a super
+admin can reset organizers and admins.
 
 ## Core rules
 
@@ -91,8 +96,9 @@ Each gameweek has one or more **matches** (numbered); each match has its own two
 game-day teams (default names "Team A" / "Team B"), so the same players can be regrouped
 between matches. Marking a player Not going removes them from every team that week.
 
-If someone drops out after the lock the teams are not re-sorted; they play short and
-the player's attendance stays unconfirmed (see Open items).
+If someone drops out after the lock the teams are not re-sorted; they play short and the
+player takes the **late drop-out deduction (−7)** (decided). In fantasy it counts like a fine,
+and in ratings they get the Going-but-no-show penalty.
 
 ## Traits and ratings
 
@@ -154,7 +160,8 @@ Integrity rules (managers are also players and bettors, so conflicts exist):
 | Team goal-difference bonus | **+1 to every player on the team** | Once per match, when a team leads by 2+ at any point (running score, not full-time) |
 | Clean sheet / low-concede band | + (TBD) | Needed so defenders are worth picking |
 | Save / key tackle | + (TBD) | Needed so defenders are worth picking |
-| Man of the match | + (TBD) | Per gameweek |
+| Man of the match | **+5** | One per match, chosen by an organizer on the match page; only counts if they played |
+| Late drop-out | **−7** | On a team but did not play, counted once the match is reconciled; shows in the points table's Deductions column |
 | Fines | − per fine | Issued manually, see below |
 
 Unset values default to 0 in code and are marked `TODO` against Open Items. Settle the
@@ -199,13 +206,18 @@ licensing). Built in step 10 with these defaults (all tunable in `BETTING`,
 
 ## Notifications
 
-WhatsApp is the primary channel (group already lives there): RSVP polls, "teams are
-set" at the lock, result summaries. Shareable result cards (image) per match. In-app
-notifications are secondary. Provider/integration choice is open.
+WhatsApp is where the group lives, but **no paid Business API for now** (decided). Instead
+the app prepares messages for an organizer to paste or open in WhatsApp (`wa.me` links):
+a "teams are set" message on the teams page, a result summary and a PNG result card on
+each match page (`src/lib/share.ts`). Automatic RSVP polls are not built. In-app
+notifications are secondary.
 
 ## Player profiles and awards
 
-Profile: career/season totals, **best partnerships** (goal-assist pairs from linked
+Profile pictures are stored in the database (`player_pictures`, bytea), not on disk: each
+upload is resized to 256x256 WebP with `sharp`, which strips metadata and rejects non-images,
+and served by `/api/players/[id]/picture` to signed-in users (works the same on Supabase
+or any Postgres). Profile: career/season totals, **best partnerships** (goal-assist pairs from linked
 events, query/materialized view), **streaks** (cached on the player, recomputed on
 lock), traits, rating history, fines, bet history, editable picture. Season awards:
 golden boot, top assister, best partnership, longest streak, player of the month.
@@ -271,20 +283,15 @@ schema or code; reinstating them means the changes noted.
 
 ## Open items (confirm before building the dependent feature)
 
-- [ ] Point values: clean sheet band, saves/tackles, MOTM
-- [ ] Late drop-outs after the lock: stay on their team and play short, or may the
-      organizer substitute someone (and who may do that after the lock)?
-- [ ] Rating constants and price mapping are first defaults (step 8); tune after real games. Ratings are not recomputed if a fine or override changes after the lock
-- [ ] A squad created after a gameweek locks does not score it; confirm that is acceptable
-- [ ] Betting defaults (100 start, +10 weekly, pooled payouts, bets close at kick-off) are my choices; confirm or change after real use. Settlement ignores later overrides after the lock
-- [ ] WhatsApp: decided not to pay for the Business API for now; manual share links and result card are the approach. Optional: a copy-text button for the "teams are set" message
+- [ ] Point values: clean sheet band and saves/tackles (man of the match is +5, decided)
+- [ ] Rating constants and price mapping are first defaults (step 8); tune after real games
+- [ ] Betting defaults (100 start, +10 weekly, pooled payouts, bets close at kick-off) are my choices; confirm or change after real use
+- [ ] Post-lock corrections re-rate that gameweek and settle bets again, but later gameweeks' stored rating history is not rewritten (only the player's current rating moves by the difference); fantasy points follow automatically
+- [ ] Late RSVP changes by an organizer after the lock do not trigger a re-rate (attendance, fines, events and man of the match do)
 - [ ] Organizer RSVP/attendance changes are not audited yet (add when the audit log is built, step 5)
 - [ ] Scoring screen: assists can only be added right after a goal; add a way to add a missed assist or event during reconciliation?
 - [ ] The cached scoring page stays on the phone after sign-out (it holds that match's roster only); clear it on logout if shared phones are a concern
-- [ ] Who counts as having played: currently marked attended OR has an event in the match (an event proves presence). Team bonus and match count use this. Confirm, or require organizers to mark attendance for everyone?
 - [ ] Auto-sub bench priority rule when several bench players attended (default: bench order)
-- [ ] Profile picture storage (local disk on the homelab vs. a hosted service); the profile has no picture upload until decided
-- [ ] Password reset: recommended approach is organizer-issued one-time reset links (same mechanism as invites, no email/SMS service needed); build when first needed
 - [ ] Before exposing the site to the public internet: serve over HTTPS (Caddy/Cloudflare Tunnel), add per-IP rate limiting at the proxy, and tighten the CSP with nonces
 - [ ] Phone verification by SMS/WhatsApp OTP is not planned: the invite link already proves the organizer knows the person
 
@@ -320,7 +327,7 @@ in `.env` at it. Never edit an applied migration; change the schema and run
 
 1. Repo, tooling, Drizzle schema + first migration, shared constants (done)
 2. Auth, roles (incl. super admin) + player profiles; trait editing (super admin only)
-   (done; profile picture upload waits on the storage decision in Open items)
+   (done; profile pictures are stored in the database)
 3. Seasons, gameweeks, RSVP/attendance
    (done: organizers create seasons and gameweeks at `/admin/calendar` (kick-off entered in Nairobi time); players RSVP at `/gameweeks/[id]` until the 3-hour lock; organizers can set anyone's RSVP at any time and mark who attended)
 4. Manual team sorting with the 3-hour lock
@@ -335,3 +342,4 @@ in `.env` at it. Never edit an applied migration; change the schema and run
 9. Partnerships, streaks, awards, WhatsApp notifications and result cards
    (done, minus automatic WhatsApp sending: `src/server/stats.ts` computes partnerships (assist→goal pairs) and season awards on demand (golden boot, top assister, best partnership, longest streak, player of the month = latest month), shown at `/awards` and on profiles. Streak counting is `players.currentStreak` (updated at lock) and `longestStreak` over played gameweeks. Sharing needs no integration: a match page has a wa.me link with a text summary (`src/lib/share.ts`) and a PNG result card at `/api/matches/[id]/card` (next/og; no emoji, they make it fetch a font from the internet). Automatic RSVP polls and "teams are set" messages wait on the WhatsApp decision)
 10. Betting (done)
+11. Follow-ups (done): man of the match (+5), late drop-out (-7), post-lock corrections (`src/server/corrections.ts` re-rates the gameweek and settles bets again after an override, fine, attendance or man of the match change on a locked gameweek), profile pictures, organizer password resets, "teams are set" message

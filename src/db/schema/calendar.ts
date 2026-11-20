@@ -57,6 +57,10 @@ export const playerRatings = pgTable(
       .references(() => gameweeks.id, { onDelete: "cascade" }),
     rating: doublePrecision().notNull(),
     delta: doublePrecision().notNull(),
+    // What the rating and streak were before this gameweek, so it can be recalculated
+    // if a correction changes the result after the lock.
+    ratingBefore: doublePrecision(),
+    streakBefore: integer().notNull().default(0),
     createdAt: createdAt(),
   },
   (t) => [unique().on(t.playerId, t.gameweekId)],

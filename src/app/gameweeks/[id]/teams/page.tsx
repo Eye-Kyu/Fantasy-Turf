@@ -4,11 +4,13 @@ import { z } from "zod";
 import { getDb } from "@/db/client";
 import { can } from "@/lib/auth/permissions";
 import { areTeamsLocked, teamsLockAt } from "@/lib/gameweek";
+import { teamsAnnouncementText, whatsappShareUrl } from "@/lib/share";
 import { formatKickoff } from "@/lib/time";
 import { getGameweek } from "@/server/calendar";
 import { requireUser } from "@/server/current-user";
 import { getGameweekTeams } from "@/server/teams";
 import { Notices } from "../../../components";
+import { CopyButton } from "./copy-button";
 import { addMatchAction, assignPlayerAction, deleteMatchAction, unassignPlayerAction } from "./actions";
 
 /** A one-button form posting hidden fields to a server action. */
@@ -53,6 +55,13 @@ export default async function TeamsPage({
   const locked = areTeamsLocked(gameweek.kickoffAt, new Date());
   // Editing controls only for people who may sort, and only while teams are open.
   const canEdit = can(user.role, "sortTeams") && !locked;
+
+  const announcement = teamsAnnouncementText({
+    gameweekNumber: gameweek.number,
+    kickoff: formatKickoff(gameweek.kickoffAt),
+    matches: matches.map((m) => ({ number: m.number, teams: m.teams.map((t) => ({ name: t.name, players: t.players.map((p) => p.displayName) })) })),
+  });
+  const anyoneSorted = matches.some((m) => m.teams.some((t) => t.players.length > 0));
 
   return (
     <main>
@@ -133,6 +142,18 @@ export default async function TeamsPage({
           )}
         </section>
       ))}
+
+      {can(user.role, "sortTeams") && anyoneSorted && (
+        <section className="card stack">
+          <h2>Tell the group</h2>
+          <p className="muted">Copy this and paste it into the WhatsApp group, or open WhatsApp with it filled in.</p>
+          <textarea readOnly rows={Math.min(14, announcement.split("\n").length + 1)} value={announcement} aria-label="Teams message" />
+          <div className="row-actions">
+            <CopyButton text={announcement} />
+            <a href={whatsappShareUrl(announcement)} target="_blank" rel="noopener noreferrer">Open in WhatsApp</a>
+          </div>
+        </section>
+      )}
 
       {canEdit && (
         <ActionButton action={addMatchAction} fields={{ gameweekId: id }} label="Add match" ghost={false} />

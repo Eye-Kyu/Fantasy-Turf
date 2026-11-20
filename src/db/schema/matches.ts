@@ -17,6 +17,8 @@ export const matches = pgTable(
     liveScorerId: uuid().references(() => users.id),
     reconciledById: uuid().references(() => users.id),
     reconciledAt: timestamptz(),
+    // Chosen by an organizer; worth BONUS_POINTS.MAN_OF_THE_MATCH to a player who played.
+    motmPlayerId: uuid().references(() => players.id),
   },
   (t) => [unique().on(t.gameweekId, t.number)],
 );

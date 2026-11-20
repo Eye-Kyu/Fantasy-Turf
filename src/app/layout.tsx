@@ -26,6 +26,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             {user && can(user.role, "manageCalendar") && <Link href="/admin/calendar">Calendar</Link>}
             {user && can(user.role, "manageViolations") && <Link href="/admin/violations">Violations</Link>}
             {user && can(user.role, "inviteUsers") && <Link href="/admin/invites">Invites</Link>}
+            {user && can(user.role, "resetPasswords") && <Link href="/admin/resets">Resets</Link>}
             {user && can(user.role, "setTraits") && <Link href="/admin/traits">Traits</Link>}
             {user ? (
               <>

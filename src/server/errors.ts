@@ -142,3 +142,18 @@ export class BettingError extends Error {
     this.name = "BettingError";
   }
 }
+
+export class InvalidResetError extends Error {
+  constructor() {
+    super("This reset link is invalid, expired or already used");
+    this.name = "InvalidResetError";
+  }
+}
+
+/** A profile picture upload was refused; `code` becomes a URL notice. */
+export class PictureError extends Error {
+  constructor(readonly code: "invalid" | "too-large" | "not-yours") {
+    super(`Picture refused: ${code}`);
+    this.name = "PictureError";
+  }
+}

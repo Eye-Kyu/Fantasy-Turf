@@ -14,6 +14,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Picture uploads are up to 2 MB (checked again in the action); the default limit is 1 MB.
+  experimental: { serverActions: { bodySizeLimit: "3mb" } },
   headers: async () => [{ source: "/:path*", headers: securityHeaders }],
 };
 

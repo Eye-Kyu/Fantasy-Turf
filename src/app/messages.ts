@@ -38,6 +38,10 @@ const ERRORS = {
   "bet-stake": "Stakes are between 1 and 50 points.",
   "bet-balance": "You don't have enough points for that bet.",
   "bet-duplicate": "You already have that kind of bet on this match.",
+  "reset-invalid": "This reset link is invalid, expired or already used. Ask an organizer for a new one.",
+  "picture-invalid": "That file isn't a picture we can use. Try a JPG, PNG or WebP photo.",
+  "picture-too-large": "That picture is too large. Please use one under 2 MB.",
+  "picture-not-yours": "You can only change your own picture.",
   "trait-exists": "A trait with that name already exists.",
 } as const;
 
@@ -58,6 +62,10 @@ const NOTICES = {
   teams: "Teams updated.",
   attendance: "Attendance saved.",
   "season-created": "Season created.",
+  "password-reset": "Password changed. Sign in with your new password.",
+  picture: "Picture saved.",
+  "picture-removed": "Picture removed.",
+  motm: "Man of the match saved.",
   "bet-placed": "Bet placed.",
   "squad-created": "Squad created.",
   lineup: "Lineup saved.",

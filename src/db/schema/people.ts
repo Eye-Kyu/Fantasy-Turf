@@ -1,5 +1,5 @@
 import { doublePrecision, index, integer, numeric, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
-import { createdAt, id, timestamptz } from "./columns";
+import { bytea, createdAt, id, timestamptz } from "./columns";
 import { userRole } from "./enums";
 
 export const users = pgTable("users", {
@@ -35,6 +35,22 @@ export const invites = pgTable("invites", {
   expiresAt: timestamptz().notNull(),
   usedAt: timestamptz(),
   usedBy: uuid().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+// Password reset: an organizer creates a one-time link for someone who is locked out and
+// sends it to them. Only a hash of the token is stored; using it ends all their sessions.
+export const passwordResets = pgTable("password_resets", {
+  id: id(),
+  tokenHash: text().notNull().unique(),
+  userId: uuid()
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdBy: uuid()
+    .notNull()
+    .references(() => users.id),
+  expiresAt: timestamptz().notNull(),
+  usedAt: timestamptz(),
   createdAt: createdAt(),
 });
 
@@ -88,3 +104,14 @@ export const playerTraits = pgTable(
   },
   (t) => [primaryKey({ columns: [t.playerId, t.traitId] })],
 );
+
+// Profile pictures live in the database so one backup covers everything. Uploads are
+// resized and re-encoded on the server (see server/pictures.ts), so these stay small.
+export const playerPictures = pgTable("player_pictures", {
+  playerId: uuid()
+    .primaryKey()
+    .references(() => players.id, { onDelete: "cascade" }),
+  contentType: text().notNull(),
+  data: bytea().notNull(),
+  updatedAt: timestamptz().notNull().defaultNow(),
+});

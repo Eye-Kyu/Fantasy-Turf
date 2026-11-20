@@ -1,4 +1,5 @@
 /** Seasons, gameweeks, RSVPs and confirmed attendance. */
+import { refreshAfterCorrection } from "./corrections";
 import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import type { DbExecutor } from "@/db/client";
 import { attendances, gameDayTeamPlayers, gameweeks, matches, players, seasons } from "@/db/schema";
@@ -123,6 +124,7 @@ export async function confirmAttendance(
     .insert(attendances)
     .values({ gameweekId: input.gameweekId, playerId: input.playerId, attended: input.attended })
     .onConflictDoUpdate({ target: [attendances.gameweekId, attendances.playerId], set: { attended: input.attended } });
+  await refreshAfterCorrection(db, input.gameweekId);
 }
 
 /** Every player with their RSVP and attendance for a gameweek (no row means no response). */

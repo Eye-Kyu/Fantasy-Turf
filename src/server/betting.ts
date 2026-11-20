@@ -186,3 +186,9 @@ export async function getBettingLeaderboard(db: DbExecutor, seasonId: string) {
   for (const u of everyone) rows.push({ userId: u.userId, name: u.displayName ?? u.email, balance: await getBalance(db, u.userId, seasonId) });
   return rows.sort((a, b) => b.balance - a.balance || a.name.localeCompare(b.name));
 }
+
+/** Undoes the settlement of a gameweek's bets and settles them again from the current result. */
+export async function resettleGameweekBets(db: DbExecutor, gameweekId: string): Promise<number> {
+  await db.update(bets).set({ status: "OPEN", payout: null }).where(eq(bets.gameweekId, gameweekId));
+  return settleGameweekBets(db, gameweekId);
+}
