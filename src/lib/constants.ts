@@ -79,3 +79,10 @@ export const RATING = {
   ABSENT: -4,
   PER_FINE_POINT: -5,
 } as const;
+
+/**
+ * Betting uses virtual points only (never money). Each season everyone starts with
+ * START points and earns ALLOWANCE more for every gameweek that locks, so nobody is
+ * stuck broke. Bets on a match are pooled: winners share all stakes in proportion.
+ */
+export const BETTING = { START: 100, ALLOWANCE: 10, MIN_STAKE: 1, MAX_STAKE: 50 } as const;

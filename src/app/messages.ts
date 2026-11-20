@@ -32,6 +32,12 @@ const ERRORS = {
   "fantasy-no-gameweek": "There is no upcoming gameweek yet.",
   "fantasy-transfer-used": "You've already used your transfer for this gameweek.",
   "fantasy-no-squad": "Pick your squad first.",
+  "bet-closed": "Bets are open from the team lock until kick-off.",
+  "bet-own-match": "You can't bet on a match you play in or score.",
+  "bet-invalid-pick": "That pick isn't in this match.",
+  "bet-stake": "Stakes are between 1 and 50 points.",
+  "bet-balance": "You don't have enough points for that bet.",
+  "bet-duplicate": "You already have that kind of bet on this match.",
   "trait-exists": "A trait with that name already exists.",
 } as const;
 
@@ -52,6 +58,7 @@ const NOTICES = {
   teams: "Teams updated.",
   attendance: "Attendance saved.",
   "season-created": "Season created.",
+  "bet-placed": "Bet placed.",
   "squad-created": "Squad created.",
   lineup: "Lineup saved.",
   transfer: "Transfer made.",

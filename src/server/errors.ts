@@ -131,3 +131,14 @@ export class FantasyError extends Error {
     this.name = "FantasyError";
   }
 }
+
+/** A betting rule was broken; `code` becomes a URL notice (see messages.ts). */
+export class BettingError extends Error {
+  constructor(
+    readonly code: "closed" | "own-match" | "invalid-pick" | "stake" | "balance" | "duplicate",
+    message: string,
+  ) {
+    super(message);
+    this.name = "BettingError";
+  }
+}

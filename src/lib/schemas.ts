@@ -171,3 +171,12 @@ export const lineupSchema = z
   });
 
 export const transferSchema = z.object({ seasonId: z.uuid(), playerOutId: z.uuid(), playerInId: z.uuid() });
+
+// --- Betting ---
+
+export const betSchema = z.object({
+  matchId: z.uuid(),
+  type: z.enum(["MATCH_WINNER", "TOP_SCORER", "TOP_ASSISTS"]),
+  pickId: z.uuid(),
+  stake: z.coerce.number().int(),
+});

@@ -16,6 +16,7 @@ import { areTeamsLocked } from "@/lib/gameweek";
 import type { EventView, ScoringOp } from "@/lib/match-events";
 import { type Actor, assertCan } from "./actor";
 import { NotFoundError, ScoringError } from "./errors";
+import { settleGameweekBets } from "./betting";
 import { applyGameweekRatings } from "./ratings";
 
 type AuditAction = "CREATE" | "VOID" | "EDIT" | "OVERRIDE";
@@ -313,7 +314,10 @@ export async function lockGameweek(db: DbExecutor, actor: Actor, gameweekId: str
       .where(and(eq(gameweeks.id, gameweekId), sql`${gameweeks.lockedAt} IS NULL`))
       .returning({ id: gameweeks.id });
     // Ratings and prices move once, at the moment the gameweek becomes final.
-    if (locked.length > 0) await applyGameweekRatings(tx, gameweekId);
+    if (locked.length > 0) {
+      await applyGameweekRatings(tx, gameweekId);
+      await settleGameweekBets(tx, gameweekId);
+    }
   });
 }
 

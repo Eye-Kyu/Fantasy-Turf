@@ -1,0 +1,3 @@
+ALTER TABLE "bets" ALTER COLUMN "match_id" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "bets" ADD CONSTRAINT "bets_userId_matchId_type_unique" UNIQUE("user_id","match_id","type");--> statement-breakpoint
+ALTER TABLE "bets" ADD CONSTRAINT "bets_pick_matches_type" CHECK (("bets"."type" = 'MATCH_WINNER' AND "bets"."target_team_id" IS NOT NULL AND "bets"."target_player_id" IS NULL) OR ("bets"."type" <> 'MATCH_WINNER' AND "bets"."target_player_id" IS NOT NULL AND "bets"."target_team_id" IS NULL));

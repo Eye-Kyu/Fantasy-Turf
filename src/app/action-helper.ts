@@ -9,7 +9,7 @@ import type { ZodType } from "zod";
 import type { Actor } from "@/server/actor";
 import { requireUser, toActor } from "@/server/current-user";
 import {
-  FantasyError, ForbiddenError, InvalidFineError, NotFoundError, PlayerNotGoingError, ScoringError, TeamsLockedError,
+  BettingError, FantasyError, ForbiddenError, InvalidFineError, NotFoundError, PlayerNotGoingError, ScoringError, TeamsLockedError,
   ViolationExistsError,
 } from "@/server/errors";
 import { revalidatePath } from "next/cache";
@@ -22,6 +22,7 @@ function errorCode(error: unknown): string | null {
   if (error instanceof PlayerNotGoingError) return "not-going";
   if (error instanceof InvalidFineError) return "fine-invalid";
   if (error instanceof ViolationExistsError) return "violation-exists";
+  if (error instanceof BettingError) return `bet-${error.code}`;
   if (error instanceof FantasyError) return `fantasy-${error.code}`;
   if (error instanceof NotFoundError) return "invalid";
   return null;

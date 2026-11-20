@@ -1,4 +1,4 @@
-import { check, integer, pgTable, uuid } from "drizzle-orm/pg-core";
+import { check, integer, pgTable, unique, uuid } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { createdAt, id } from "./columns";
 import { gameweeks } from "./calendar";
@@ -18,7 +18,9 @@ export const bets = pgTable(
       .notNull()
       .references(() => gameweeks.id),
     type: betType().notNull(),
-    matchId: uuid().references(() => matches.id),
+    matchId: uuid()
+      .notNull()
+      .references(() => matches.id),
     targetPlayerId: uuid().references(() => players.id),
     targetTeamId: uuid().references(() => gameDayTeams.id),
     stake: integer().notNull(),
@@ -26,5 +28,13 @@ export const bets = pgTable(
     payout: integer(),
     createdAt: createdAt(),
   },
-  (t) => [check("bets_stake_positive", sql`${t.stake} > 0`)],
+  (t) => [
+    check("bets_stake_positive", sql`${t.stake} > 0`),
+    // One bet per type per match per person; the pick must match the type.
+    unique().on(t.userId, t.matchId, t.type),
+    check(
+      "bets_pick_matches_type",
+      sql`(${t.type} = 'MATCH_WINNER' AND ${t.targetTeamId} IS NOT NULL AND ${t.targetPlayerId} IS NULL) OR (${t.type} <> 'MATCH_WINNER' AND ${t.targetPlayerId} IS NOT NULL AND ${t.targetTeamId} IS NULL)`,
+    ),
+  ],
 );
