@@ -7,6 +7,7 @@ import { listSeasons } from "@/server/calendar";
 import { listPlayerFines } from "@/server/fines";
 import { getPlayerProfile, listTraits } from "@/server/players";
 import { getSeasonTotals } from "@/server/points";
+import { getPartnerships } from "@/server/stats";
 import { FineList, Notices } from "../../components";
 import { setTraitsAction, updateProfileAction } from "../actions";
 
@@ -31,6 +32,7 @@ export default async function PlayerProfilePage({
   const canSetTraits = can(user.role, "setTraits");
   const allTraits = canSetTraits ? await listTraits(db) : [];
   const playerFines = await listPlayerFines(db, id);
+  const partnerships = await getPartnerships(db, { playerId: id, limit: 5 });
   const [season] = await listSeasons(db);
   const seasonStats = season ? (await getSeasonTotals(db, season.id)).find((row) => row.playerId === id) : undefined;
   const ownedTraitIds = new Set(profile.traits.map((trait) => trait.id));
@@ -63,6 +65,17 @@ export default async function PlayerProfilePage({
           )}
         </div>
       </section>
+
+      {partnerships.length > 0 && (
+        <section>
+          <h2>Best partnerships</h2>
+          <ul className="plain">
+            {partnerships.map((p) => (
+              <li key={`${p.assisterId}-${p.scorerId}`}>{p.assisterName} → {p.scorerName} · {p.goals} goal{p.goals > 1 ? "s" : ""}</li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {playerFines.length > 0 && (
         <section>

@@ -268,7 +268,7 @@ schema or code; reinstating them means the changes noted.
 - [ ] Rating constants and price mapping are first defaults (step 8); tune after real games. Ratings are not recomputed if a fine or override changes after the lock
 - [ ] A squad created after a gameweek locks does not score it; confirm that is acceptable
 - [ ] Bet starting balance and stake/payout mechanics
-- [ ] WhatsApp integration approach (Business API vs. manual share links)
+- [ ] WhatsApp integration approach: manual share links and result card are built; Business API (automatic RSVP polls, "teams are set" at the lock) is not. Confirm whether to pay for it
 - [ ] Organizer RSVP/attendance changes are not audited yet (add when the audit log is built, step 5)
 - [ ] Scoring screen: assists can only be added right after a goal; add a way to add a missed assist or event during reconciliation?
 - [ ] The cached scoring page stays on the phone after sign-out (it holds that match's roster only); clear it on logout if shared phones are a concern
@@ -324,4 +324,5 @@ in `.env` at it. Never edit an applied migration; change the schema and run
    (done: `src/server/fines.ts`; organizers load the standard violations and edit the catalog at `/admin/violations`, issue and void fines at `/gameweeks/[id]/fines`; fines show on profiles and feed the points page. Fines can still be issued after a gameweek is locked (organizers only, who and when are recorded); they are not in the event audit log)
 8. Ratings update, fantasy squads, auto-sub, captain, transfers, leaderboards (done)
 9. Partnerships, streaks, awards, WhatsApp notifications and result cards
+   (done, minus automatic WhatsApp sending: `src/server/stats.ts` computes partnerships (assist→goal pairs) and season awards on demand (golden boot, top assister, best partnership, longest streak, player of the month = latest month), shown at `/awards` and on profiles. Streak counting is `players.currentStreak` (updated at lock) and `longestStreak` over played gameweeks. Sharing needs no integration: a match page has a wa.me link with a text summary (`src/lib/share.ts`) and a PNG result card at `/api/matches/[id]/card` (next/og; no emoji, they make it fetch a font from the internet). Automatic RSVP polls and "teams are set" messages wait on the WhatsApp decision)
 10. Betting

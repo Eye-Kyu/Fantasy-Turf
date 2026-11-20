@@ -5,6 +5,7 @@ import { getDb } from "@/db/client";
 import { can } from "@/lib/auth/permissions";
 import { areTeamsLocked } from "@/lib/gameweek";
 import { tallyScore } from "@/lib/match-events";
+import { matchSummaryText, whatsappShareUrl } from "@/lib/share";
 import { formatClock, formatKickoff } from "@/lib/time";
 import { requireUser } from "@/server/current-user";
 import { NotFoundError } from "@/server/errors";
@@ -64,6 +65,21 @@ export default async function MatchPage({
   const score = tallyScore(events, teams.map((team) => team.id));
   const playerName = new Map(teams.flatMap((team) => team.players.map((p) => [p.playerId, p.displayName] as const)));
   const teamName = new Map(teams.map((team) => [team.id, team.name] as const));
+  const live = events.filter((e) => !e.voided);
+  const involvement = new Map<string, { name: string; goals: number; assists: number }>();
+  for (const e of live) {
+    if (e.type !== "GOAL" && e.type !== "ASSIST") continue;
+    const entry = involvement.get(e.playerId) ?? { name: playerName.get(e.playerId) ?? "?", goals: 0, assists: 0 };
+    if (e.type === "GOAL") entry.goals += 1;
+    else entry.assists += 1;
+    involvement.set(e.playerId, entry);
+  }
+  const shareText = matchSummaryText({
+    gameweekNumber: gameweek.number,
+    matchNumber: match.number,
+    teams: teams.map((team) => ({ name: team.name, goals: score[team.id] ?? 0 })),
+    scorers: [...involvement.values()],
+  });
   const audit = isOrganizer ? await listMatchAudit(db, id) : [];
 
   return (
@@ -83,6 +99,12 @@ export default async function MatchPage({
           </div>
         ))}
       </section>
+
+      <p>
+        <a href={whatsappShareUrl(shareText)} target="_blank" rel="noopener noreferrer">Share result on WhatsApp</a>
+        {" · "}
+        <a href={`/api/matches/${id}/card`} target="_blank" rel="noopener noreferrer">Result card (image)</a>
+      </p>
 
       <section className="card">
         <h2>Live scoring</h2>

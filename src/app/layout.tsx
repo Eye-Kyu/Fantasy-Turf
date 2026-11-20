@@ -20,6 +20,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             <Link href="/gameweeks">Games</Link>
             <Link href="/fantasy">Fantasy</Link>
             <Link href="/leaderboard">Leaderboard</Link>
+            <Link href="/awards">Awards</Link>
             <Link href="/players">Players</Link>
             {user && can(user.role, "manageCalendar") && <Link href="/admin/calendar">Calendar</Link>}
             {user && can(user.role, "manageViolations") && <Link href="/admin/violations">Violations</Link>}
