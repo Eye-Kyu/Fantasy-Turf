@@ -13,6 +13,8 @@ const ERRORS = {
   "invite-invalid": "This invite link is invalid, expired or already used.",
   forbidden: "You aren't allowed to do that.",
   "rsvp-closed": "RSVPs closed 3 hours before kick-off. Ask an organizer if you need to change yours.",
+  "teams-locked": "Teams are locked (3 hours before kick-off), so they can no longer be changed.",
+  "not-going": "Only players who RSVP'd Going can be put on a team.",
   "season-exists": "A season with that name already exists.",
   "trait-exists": "A trait with that name already exists.",
 } as const;
@@ -22,6 +24,7 @@ const NOTICES = {
   traits: "Traits saved.",
   "trait-created": "Trait added.",
   rsvp: "RSVP saved.",
+  teams: "Teams updated.",
   attendance: "Attendance saved.",
   "season-created": "Season created.",
   "gameweek-created": "Gameweek added.",

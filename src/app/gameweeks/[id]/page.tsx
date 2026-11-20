@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { getDb } from "@/db/client";
@@ -41,6 +42,7 @@ export default async function GameweekPage({
         Kick-off {formatKickoff(gameweek.kickoffAt)}. {open ? `RSVPs close ${formatKickoff(teamsLockAt(gameweek.kickoffAt))}.` : "RSVPs are closed."}
       </p>
       <Notices error={error} saved={saved} />
+      <p><Link href={`/gameweeks/${id}/teams`}>View teams</Link></p>
 
       {user.playerId && (
         <section className="card">

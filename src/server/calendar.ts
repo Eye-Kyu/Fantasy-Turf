@@ -1,8 +1,8 @@
 /** Seasons, gameweeks, RSVPs and confirmed attendance. */
-import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import type { DbExecutor } from "@/db/client";
-import { attendances, gameweeks, players, seasons } from "@/db/schema";
-import { areRsvpsOpen, teamsLockAt } from "@/lib/gameweek";
+import { attendances, gameDayTeamPlayers, gameweeks, matches, players, seasons } from "@/db/schema";
+import { areRsvpsOpen } from "@/lib/gameweek";
 import { type Actor, assertCan } from "./actor";
 import { isUniqueViolation } from "./db-errors";
 import { NotFoundError, RsvpClosedError, SeasonExistsError } from "./errors";
@@ -23,10 +23,7 @@ export async function listSeasons(db: DbExecutor) {
   return db.select().from(seasons).orderBy(desc(seasons.startsOn));
 }
 
-/**
- * Adds the next numbered gameweek to a season. The lineup deadline defaults to the team
- * lock; the open question of whether they should differ is tracked in CLAUDE.md.
- */
+/** Adds the next numbered gameweek to a season. */
 export async function createGameweek(db: DbExecutor, actor: Actor, input: { seasonId: string; kickoffAt: Date }) {
   assertCan(actor, "manageCalendar");
   const [season] = await db.select({ id: seasons.id }).from(seasons).where(eq(seasons.id, input.seasonId));
@@ -42,7 +39,6 @@ export async function createGameweek(db: DbExecutor, actor: Actor, input: { seas
       seasonId: input.seasonId,
       number: latest!.number + 1,
       kickoffAt: input.kickoffAt,
-      lineupDeadline: teamsLockAt(input.kickoffAt),
     })
     .returning({ id: gameweeks.id });
   return gameweek!;
@@ -92,10 +88,25 @@ export async function setRsvp(
   if (!isOwn) assertCan(actor, "confirmAttendance");
   if (isOwn && !areRsvpsOpen(gameweek.kickoffAt, now)) throw new RsvpClosedError();
 
-  await db
-    .insert(attendances)
-    .values({ gameweekId: input.gameweekId, playerId: input.playerId, rsvp: input.status })
-    .onConflictDoUpdate({ target: [attendances.gameweekId, attendances.playerId], set: { rsvp: input.status } });
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(attendances)
+      .values({ gameweekId: input.gameweekId, playerId: input.playerId, rsvp: input.status })
+      .onConflictDoUpdate({ target: [attendances.gameweekId, attendances.playerId], set: { rsvp: input.status } });
+
+    // Someone who is no longer coming must not stay on a team (teams only hold Going players).
+    if (input.status === "NOT_GOING") {
+      await tx.delete(gameDayTeamPlayers).where(
+        and(
+          eq(gameDayTeamPlayers.playerId, input.playerId),
+          inArray(
+            gameDayTeamPlayers.matchId,
+            tx.select({ id: matches.id }).from(matches).where(eq(matches.gameweekId, input.gameweekId)),
+          ),
+        ),
+      );
+    }
+  });
 }
 
 /** Records on game day whether a player actually turned up. Organizers only. */

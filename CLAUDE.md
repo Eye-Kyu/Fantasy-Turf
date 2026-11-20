@@ -69,8 +69,10 @@ now (see Open items).
 - Each gameweek has a `kickoffAt`. **Game-day teams lock, and RSVPs close, 3 hours
   before kick-off** (`TEAM_LOCK_HOURS_BEFORE_KICKOFF`, derived with `teamsLockAt`, not
   stored). Nobody is moved after the lock.
-- The **lineup deadline** (fantasy transfers, captain, bench order) is a separate
-  stored field; see Open items for how it relates to the lock.
+- The **lineup deadline** (fantasy transfers, captain, bench order) **equals the team
+  lock** (decided): one moment, derived with `teamsLockAt`, nothing stored. Because
+  teams may be sorted before the lock, managers can sometimes see them while still
+  choosing a lineup; that is accepted.
 - Players RSVP weekly (`Attendance`: going / not going / no response). On game day the
   organizer confirms who actually **attended**; only attended players can score.
 - A fantasy player who did not attend scores 0 from play. If a starter did not attend,
@@ -84,6 +86,10 @@ Manual. Between the RSVP list and the lock the organizer assigns players to game
 teams. There is no automatic balancing and **no trait rules**: how the organizer
 decides is outside the app. The app only enforces: one team per player per match
 (database constraint), only RSVP'd-going players, and no changes after the lock.
+
+Each gameweek has one or more **matches** (numbered); each match has its own two
+game-day teams (default names "Team A" / "Team B"), so the same players can be regrouped
+between matches. Marking a player Not going removes them from every team that week.
 
 If someone drops out after the lock the teams are not re-sorted; they play short and
 the player's attendance stays unconfirmed (see Open items).
@@ -202,7 +208,7 @@ Defined in `src/db/schema/` (one file per domain); keep this table in sync with 
 | `traits`, `player_traits` | Trait catalog (name, category) and links; editable by super admin only |
 | `player_ratings` | Rating history per player per gameweek |
 | `seasons` | Season grouping; start/end |
-| `gameweeks` | Weekly game day: `kickoffAt`, lineup deadline, locked flag |
+| `gameweeks` | Weekly game day: `kickoffAt` (lock and lineup deadline are derived from it), locked flag |
 | `attendances` | RSVP status and confirmed-attended flag per player per gameweek |
 | `matches` | Matches within a gameweek |
 | `game_day_teams`, `game_day_team_players` | Ephemeral teams and their members |
@@ -211,7 +217,7 @@ Defined in `src/db/schema/` (one file per domain); keep this table in sync with 
 | `violation_types` | Catalog of fineable violations with default deduction |
 | `fines` | Manual deductions: player, gameweek, violation, points, issuer, void state |
 | `fantasy_squads`, `fantasy_squad_players` | A manager's persistent 6-player roster for a season |
-| `fantasy_lineups`, `fantasy_lineup_players` | Per-gameweek snapshot frozen at the lineup deadline: starter/bench slot, bench order, captain, cached points |
+| `fantasy_lineups`, `fantasy_lineup_players` | Per-gameweek snapshot frozen at the lock: starter/bench slot, bench order, captain, cached points |
 | `transfers` | Transfer history; unique per squad per gameweek enforces the 1-transfer limit |
 | `bets` | Points-based bets and resolution |
 
@@ -249,15 +255,12 @@ schema or code; reinstating them means the changes noted.
 - [ ] Point values: clean sheet band, saves/tackles, MOTM
 - [ ] Fine deductions per violation (tiers above are proposals) and whether fines are
       fantasy points or money
-- [ ] Lineup deadline vs. team lock: should fantasy lineups also lock 3 hours before
-      kick-off? If they lock later, managers see the sorted teams before choosing
 - [ ] Late drop-outs after the lock: stay on their team and play short, or may the
       organizer substitute someone (and who may do that after the lock)?
 - [ ] Starting prices (from rating) and the fantasy budget cap
 - [ ] Rating constants (K-factor, starting rating, team aggregation) and price mapping
 - [ ] Bet starting balance and stake/payout mechanics
 - [ ] WhatsApp integration approach (Business API vs. manual share links)
-- [ ] Lineup deadline currently defaults to the team lock when a gameweek is created (no UI to change it yet); keep them equal or separate?
 - [ ] Organizer RSVP/attendance changes are not audited yet (add when the audit log is built, step 5)
 - [ ] Auto-sub bench priority rule when several bench players attended (default: bench order)
 - [ ] Profile picture storage (local disk on the homelab vs. a hosted service); the profile has no picture upload until decided
@@ -301,6 +304,7 @@ in `.env` at it. Never edit an applied migration; change the schema and run
 3. Seasons, gameweeks, RSVP/attendance
    (done: organizers create seasons and gameweeks at `/admin/calendar` (kick-off entered in Nairobi time); players RSVP at `/gameweeks/[id]` until the 3-hour lock; organizers can set anyone's RSVP at any time and mark who attended)
 4. Manual team sorting with the 3-hour lock
+   (done: `/gameweeks/[id]/teams`; organizers add matches and move Going players between Team A/B until the lock, everyone can view; copy-teams-between-matches and renaming teams are not built)
 5. Live scoring PWA (offline queue, undo) + reconciliation + audit log + locking
 6. Scoring engine (goal, assist, goal-diff bonus first; TBD values wired as set)
 7. Fines: violation catalog seed, issue/void flow, applied to gameweek scores

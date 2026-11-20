@@ -1,0 +1,1 @@
+ALTER TABLE "gameweeks" DROP COLUMN "lineup_deadline";

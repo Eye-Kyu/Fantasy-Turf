@@ -40,13 +40,12 @@ async function setup(db: DbExecutor) {
 }
 
 describe("seasons and gameweeks", () => {
-  it("numbers gameweeks in order and defaults the lineup deadline to the team lock", () =>
+  it("numbers gameweeks in order", () =>
     withRollback(async (db) => {
       const { organizer, season } = await setup(db);
       await createGameweek(db, organizer.actor, { seasonId: season.id, kickoffAt: new Date("2026-12-05T13:00:00Z") });
       const weeks = await listGameweeks(db, season.id);
       expect(weeks.map((w) => w.number)).toEqual([1, 2]);
-      expect(weeks[0]!.lineupDeadline.toISOString()).toBe("2026-11-28T10:00:00.000Z");
     }));
 
   it("is for organizers only and rejects a duplicate season name", () =>

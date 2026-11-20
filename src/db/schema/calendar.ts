@@ -18,11 +18,10 @@ export const gameweeks = pgTable(
       .notNull()
       .references(() => seasons.id, { onDelete: "cascade" }),
     number: integer().notNull(),
-    // Kick-off of the first match. Game-day teams lock, and RSVPs close, at kickoffAt
-    // minus TEAM_LOCK_HOURS_BEFORE_KICKOFF (derived in src/lib/gameweek.ts, not stored).
+    // Kick-off of the first match. Game-day teams lock, RSVPs close and fantasy lineups
+    // freeze at kickoffAt minus TEAM_LOCK_HOURS_BEFORE_KICKOFF (derived in
+    // src/lib/gameweek.ts, not stored).
     kickoffAt: timestamptz().notNull(),
-    // Transfers, captain and bench order lock here.
-    lineupDeadline: timestamptz().notNull(),
     // Set when reconciliation is confirmed; later edits need an OVERRIDE audit.
     lockedAt: timestamptz(),
   },

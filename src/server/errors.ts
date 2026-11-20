@@ -62,3 +62,17 @@ export class SeasonExistsError extends Error {
     this.name = "SeasonExistsError";
   }
 }
+
+export class TeamsLockedError extends Error {
+  constructor() {
+    super("Teams are locked for this gameweek");
+    this.name = "TeamsLockedError";
+  }
+}
+
+export class PlayerNotGoingError extends Error {
+  constructor() {
+    super("Only players who RSVP'd Going can be put on a team");
+    this.name = "PlayerNotGoingError";
+  }
+}

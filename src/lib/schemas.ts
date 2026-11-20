@@ -73,3 +73,9 @@ export const attendanceSchema = z.object({
   playerId: z.uuid(),
   attended: z.enum(["true", "false"]).transform((value) => value === "true"),
 });
+
+// Team-sorting forms. `gameweekId` is only where to return to after the action.
+export const addMatchSchema = z.object({ gameweekId: z.uuid() });
+export const deleteMatchSchema = z.object({ gameweekId: z.uuid(), matchId: z.uuid() });
+export const assignPlayerSchema = z.object({ gameweekId: z.uuid(), teamId: z.uuid(), playerId: z.uuid() });
+export const unassignPlayerSchema = z.object({ gameweekId: z.uuid(), matchId: z.uuid(), playerId: z.uuid() });
