@@ -4,6 +4,7 @@
  */
 import { z } from "zod";
 import { normalizePhone } from "./phone";
+import { parseNairobiDateTime } from "./time";
 
 const email = z.string().trim().toLowerCase().pipe(z.email());
 const displayName = z.string().trim().min(2).max(40);
@@ -43,4 +44,32 @@ export const profileSchema = z.object({
 export const traitSchema = z.object({
   name: z.string().trim().min(2).max(30),
   category: z.string().trim().min(2).max(30),
+});
+
+export const seasonSchema = z.object({
+  name: z.string().trim().min(2).max(40),
+  startsOn: z.iso.date(),
+});
+
+export const gameweekSchema = z.object({
+  seasonId: z.uuid(),
+  // A datetime-local form value, read as Nairobi time.
+  kickoffAt: z.string().transform((value, ctx) => {
+    const date = parseNairobiDateTime(value);
+    if (!date) ctx.addIssue({ code: "custom", message: "Enter a valid kick-off time" });
+    return date ?? z.NEVER;
+  }),
+});
+
+export const rsvpSchema = z.object({
+  gameweekId: z.uuid(),
+  // Omitted when players answer for themselves; set by an organizer answering for someone.
+  playerId: z.uuid().optional(),
+  status: z.enum(["GOING", "NOT_GOING"]),
+});
+
+export const attendanceSchema = z.object({
+  gameweekId: z.uuid(),
+  playerId: z.uuid(),
+  attended: z.enum(["true", "false"]).transform((value) => value === "true"),
 });

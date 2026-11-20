@@ -16,7 +16,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <header className="site-header">
           <nav>
             <Link href="/" className="brand">Street Football Fantasy</Link>
+            <Link href="/gameweeks">Games</Link>
             <Link href="/players">Players</Link>
+            {user && can(user.role, "manageCalendar") && <Link href="/admin/calendar">Calendar</Link>}
             {user && can(user.role, "inviteUsers") && <Link href="/admin/invites">Invites</Link>}
             {user && can(user.role, "setTraits") && <Link href="/admin/traits">Traits</Link>}
             {user ? (

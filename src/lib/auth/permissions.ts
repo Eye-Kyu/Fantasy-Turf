@@ -14,6 +14,7 @@ export type Action =
   | "issueFines"
   | "reconcileMatches"
   | "inviteUsers"
+  | "manageCalendar"
   | "setTraits"
   | "manageUsers";
 
@@ -23,6 +24,7 @@ const ORGANIZER_ACTIONS: readonly Action[] = [
   "issueFines",
   "reconcileMatches",
   "inviteUsers",
+  "manageCalendar",
 ];
 
 /** Actions only a super admin may do, on top of everything an organizer can. */

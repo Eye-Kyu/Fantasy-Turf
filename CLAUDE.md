@@ -257,6 +257,8 @@ schema or code; reinstating them means the changes noted.
 - [ ] Rating constants (K-factor, starting rating, team aggregation) and price mapping
 - [ ] Bet starting balance and stake/payout mechanics
 - [ ] WhatsApp integration approach (Business API vs. manual share links)
+- [ ] Lineup deadline currently defaults to the team lock when a gameweek is created (no UI to change it yet); keep them equal or separate?
+- [ ] Organizer RSVP/attendance changes are not audited yet (add when the audit log is built, step 5)
 - [ ] Auto-sub bench priority rule when several bench players attended (default: bench order)
 - [ ] Profile picture storage (local disk on the homelab vs. a hosted service); the profile has no picture upload until decided
 - [ ] Password reset: recommended approach is organizer-issued one-time reset links (same mechanism as invites, no email/SMS service needed); build when first needed
@@ -297,6 +299,7 @@ in `.env` at it. Never edit an applied migration; change the schema and run
 2. Auth, roles (incl. super admin) + player profiles; trait editing (super admin only)
    (done; profile picture upload waits on the storage decision in Open items)
 3. Seasons, gameweeks, RSVP/attendance
+   (done: organizers create seasons and gameweeks at `/admin/calendar` (kick-off entered in Nairobi time); players RSVP at `/gameweeks/[id]` until the 3-hour lock; organizers can set anyone's RSVP at any time and mark who attended)
 4. Manual team sorting with the 3-hour lock
 5. Live scoring PWA (offline queue, undo) + reconciliation + audit log + locking
 6. Scoring engine (goal, assist, goal-diff bonus first; TBD values wired as set)

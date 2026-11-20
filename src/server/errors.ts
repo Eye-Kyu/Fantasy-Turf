@@ -48,3 +48,17 @@ export class TraitExistsError extends Error {
     this.name = "TraitExistsError";
   }
 }
+
+export class RsvpClosedError extends Error {
+  constructor() {
+    super("RSVPs for this gameweek are closed");
+    this.name = "RsvpClosedError";
+  }
+}
+
+export class SeasonExistsError extends Error {
+  constructor(name: string) {
+    super(`A season named "${name}" already exists`);
+    this.name = "SeasonExistsError";
+  }
+}

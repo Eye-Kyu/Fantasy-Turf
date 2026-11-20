@@ -12,6 +12,8 @@ const ERRORS = {
   "phone-invalid": "Please enter a valid phone number, e.g. 0712 345 678.",
   "invite-invalid": "This invite link is invalid, expired or already used.",
   forbidden: "You aren't allowed to do that.",
+  "rsvp-closed": "RSVPs closed 3 hours before kick-off. Ask an organizer if you need to change yours.",
+  "season-exists": "A season with that name already exists.",
   "trait-exists": "A trait with that name already exists.",
 } as const;
 
@@ -19,6 +21,10 @@ const NOTICES = {
   profile: "Profile saved.",
   traits: "Traits saved.",
   "trait-created": "Trait added.",
+  rsvp: "RSVP saved.",
+  attendance: "Attendance saved.",
+  "season-created": "Season created.",
+  "gameweek-created": "Gameweek added.",
 } as const;
 
 /** The error text for a URL code, or null if the code is unknown. */

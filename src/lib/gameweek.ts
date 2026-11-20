@@ -12,3 +12,8 @@ export function teamsLockAt(kickoffAt: Date): Date {
 export function areTeamsLocked(kickoffAt: Date, now: Date): boolean {
   return now.getTime() >= teamsLockAt(kickoffAt).getTime();
 }
+
+/** RSVPs (and team changes) are open until the lock moment. */
+export function areRsvpsOpen(kickoffAt: Date, now: Date): boolean {
+  return !areTeamsLocked(kickoffAt, now);
+}
