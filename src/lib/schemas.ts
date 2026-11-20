@@ -4,6 +4,7 @@
  */
 import { z } from "zod";
 import { normalizePhone } from "./phone";
+import { EVENT_TYPES } from "./domain";
 import { parseNairobiDateTime } from "./time";
 
 const email = z.string().trim().toLowerCase().pipe(z.email());
@@ -79,3 +80,28 @@ export const addMatchSchema = z.object({ gameweekId: z.uuid() });
 export const deleteMatchSchema = z.object({ gameweekId: z.uuid(), matchId: z.uuid() });
 export const assignPlayerSchema = z.object({ gameweekId: z.uuid(), teamId: z.uuid(), playerId: z.uuid() });
 export const unassignPlayerSchema = z.object({ gameweekId: z.uuid(), matchId: z.uuid(), playerId: z.uuid() });
+
+/** A phone's queued scoring operations. Team ids from the phone are display-only; the server uses its own. */
+export const scoringOpsSchema = z.object({
+  ops: z
+    .array(
+      z.discriminatedUnion("kind", [
+        z.object({
+          kind: z.literal("add"),
+          clientId: z.uuid(),
+          type: z.enum(EVENT_TYPES),
+          teamId: z.uuid(),
+          playerId: z.uuid(),
+          relatedClientId: z.uuid().nullable(),
+          occurredAt: z.iso.datetime(),
+        }),
+        z.object({ kind: z.literal("void"), clientId: z.uuid() }),
+      ]),
+    )
+    .max(200),
+});
+
+export const matchActionSchema = z.object({ matchId: z.uuid() });
+export const gameweekActionSchema = z.object({ gameweekId: z.uuid(), matchId: z.uuid().optional() });
+export const eventActionSchema = z.object({ matchId: z.uuid(), clientId: z.uuid() });
+export const changeEventPlayerSchema = eventActionSchema.extend({ playerId: z.uuid() });

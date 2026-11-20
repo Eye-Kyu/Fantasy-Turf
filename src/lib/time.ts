@@ -26,3 +26,8 @@ export function formatKickoff(date: Date): string {
     hour12: false,
   }).format(date);
 }
+
+/** "14:03" in Nairobi time, for event logs. */
+export function formatClock(date: Date): string {
+  return new Intl.DateTimeFormat("en-GB", { timeZone: APP_TIME_ZONE, hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
+}

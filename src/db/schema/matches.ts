@@ -1,4 +1,5 @@
-import { index, integer, jsonb, pgTable, primaryKey, text, unique, uuid, type AnyPgColumn } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { check, index, integer, jsonb, pgTable, primaryKey, text, unique, uniqueIndex, uuid, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { createdAt, id, timestamptz } from "./columns";
 import { auditAction, eventType } from "./enums";
 import { gameweeks } from "./calendar";
@@ -76,7 +77,15 @@ export const matchEvents = pgTable(
     voidedAt: timestamptz(),
     createdAt: createdAt(),
   },
-  (t) => [index().on(t.matchId, t.occurredAt)],
+  (t) => [
+    index().on(t.matchId, t.occurredAt),
+    // An assist always belongs to a goal, and nothing else does.
+    check("assist_links_to_goal", sql`(${t.type} = 'ASSIST') = (${t.relatedEventId} IS NOT NULL)`),
+    // At most one live assist per goal (a voided assist can be replaced).
+    uniqueIndex("one_live_assist_per_goal")
+      .on(t.relatedEventId)
+      .where(sql`${t.type} = 'ASSIST' AND ${t.voidedAt} IS NULL`),
+  ],
 );
 
 export const eventAuditLogs = pgTable(

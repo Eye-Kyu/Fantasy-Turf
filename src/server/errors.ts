@@ -76,3 +76,23 @@ export class PlayerNotGoingError extends Error {
     this.name = "PlayerNotGoingError";
   }
 }
+
+/** Why a scoring or reconciliation action was refused; the code picks the message shown. */
+export type ScoringErrorCode =
+  | "not-open" // teams are not locked yet, so the match cannot be scored
+  | "playing" // the user plays in this match
+  | "not-scorer" // someone else is the live scorer
+  | "scorer-taken"
+  | "locked" // the gameweek is locked and the user is not an organizer
+  | "invalid-event"
+  | "not-reconciled";
+
+export class ScoringError extends Error {
+  constructor(
+    readonly code: ScoringErrorCode,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ScoringError";
+  }
+}

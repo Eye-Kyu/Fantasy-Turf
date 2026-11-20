@@ -5,7 +5,8 @@ import { getCurrentUser } from "@/server/current-user";
 import { logoutAction } from "./auth-actions";
 import "./globals.css";
 
-export const metadata = { title: "Street Football Fantasy League" };
+export const metadata = { title: "Street Football Fantasy League", manifest: "/manifest.webmanifest" };
+export const viewport = { themeColor: "#1f7a4d" };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();

@@ -212,7 +212,7 @@ Defined in `src/db/schema/` (one file per domain); keep this table in sync with 
 | `attendances` | RSVP status and confirmed-attended flag per player per gameweek |
 | `matches` | Matches within a gameweek |
 | `game_day_teams`, `game_day_team_players` | Ephemeral teams and their members |
-| `match_events` | Goal / assist / save / key tackle; client UUID; voided flag; links assist to goal |
+| `match_events` | Goal / assist / save / key tackle; client UUID; voided flag; links assist to goal (DB checks: an assist always has a goal, one live assist per goal) |
 | `event_audit_logs` | Who changed what and when, before/after |
 | `violation_types` | Catalog of fineable violations with default deduction |
 | `fines` | Manual deductions: player, gameweek, violation, points, issuer, void state |
@@ -262,6 +262,8 @@ schema or code; reinstating them means the changes noted.
 - [ ] Bet starting balance and stake/payout mechanics
 - [ ] WhatsApp integration approach (Business API vs. manual share links)
 - [ ] Organizer RSVP/attendance changes are not audited yet (add when the audit log is built, step 5)
+- [ ] Scoring screen: assists can only be added right after a goal; add a way to add a missed assist or event during reconciliation?
+- [ ] The cached scoring page stays on the phone after sign-out (it holds that match's roster only); clear it on logout if shared phones are a concern
 - [ ] Auto-sub bench priority rule when several bench players attended (default: bench order)
 - [ ] Profile picture storage (local disk on the homelab vs. a hosted service); the profile has no picture upload until decided
 - [ ] Password reset: recommended approach is organizer-issued one-time reset links (same mechanism as invites, no email/SMS service needed); build when first needed
@@ -306,6 +308,7 @@ in `.env` at it. Never edit an applied migration; change the schema and run
 4. Manual team sorting with the 3-hour lock
    (done: `/gameweeks/[id]/teams`; organizers add matches and move Going players between Team A/B until the lock, everyone can view; copy-teams-between-matches and renaming teams are not built)
 5. Live scoring PWA (offline queue, undo) + reconciliation + audit log + locking
+   (done: `/matches/[id]` (score, event log, claim scoring, reconcile, lock gameweek, audit log for organizers) and `/matches/[id]/score` (offline-first scoring screen; queue and last server snapshot kept in localStorage, `public/sw.js` caches the page and static assets, installable via `public/manifest.webmanifest`). Rules live in `src/server/scoring.ts` and the pure `src/lib/match-events.ts`. Not built yet: adding a missed assist/event during reconciliation, save/tackle scoring points)
 6. Scoring engine (goal, assist, goal-diff bonus first; TBD values wired as set)
 7. Fines: violation catalog seed, issue/void flow, applied to gameweek scores
 8. Ratings update, fantasy squads, auto-sub, captain, transfers, leaderboards

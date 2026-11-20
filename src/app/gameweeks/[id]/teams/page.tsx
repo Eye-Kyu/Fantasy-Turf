@@ -67,7 +67,7 @@ export default async function TeamsPage({
 
       {matches.map((match) => (
         <section key={match.id} className="card">
-          <h2>Match {match.number}</h2>
+          <h2>Match {match.number} · <Link href={`/matches/${match.id}`}>Score &amp; events</Link></h2>
           <div className="teams">
             {match.teams.map((team) => (
               <div key={team.id}>

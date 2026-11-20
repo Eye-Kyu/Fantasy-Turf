@@ -73,3 +73,14 @@ button.active { background: var(--accent); color: var(--accent-text); border-col
 .teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
 h3 { font-size: 1rem; margin: 0.75rem 0 0.25rem; }
 .card > .row-actions { margin-top: 0.75rem; }
+.scoreboard { display: flex; justify-content: space-around; text-align: center; }
+.scoreboard .goals { font-size: 3rem; font-weight: 800; line-height: 1.1; }
+li.voided { text-decoration: line-through; opacity: 0.55; }
+a.button { display: inline-block; text-decoration: none; padding: 0.55rem 1rem; border-radius: 0.5rem; background: var(--accent); color: var(--accent-text); font-weight: 600; }
+select { font: inherit; padding: 0.3rem; border: 1px solid var(--border); border-radius: 0.4rem; background: var(--bg); color: var(--text); }
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.scoring .chips button { padding: 0.8rem 1.1rem; font-size: 1.05rem; }
+.sync { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; color: var(--muted); }
+.sync.offline { color: var(--error-text); font-weight: 600; }
+.action-bar { position: sticky; bottom: 0.5rem; box-shadow: 0 4px 16px rgb(0 0 0 / 0.2); }
+button:disabled { opacity: 0.4; cursor: default; }

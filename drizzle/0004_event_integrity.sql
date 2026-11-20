@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX "one_live_assist_per_goal" ON "match_events" USING btree ("related_event_id") WHERE "match_events"."type" = 'ASSIST' AND "match_events"."voided_at" IS NULL;--> statement-breakpoint
+ALTER TABLE "match_events" ADD CONSTRAINT "assist_links_to_goal" CHECK (("match_events"."type" = 'ASSIST') = ("match_events"."related_event_id" IS NOT NULL));

@@ -1,0 +1,10 @@
+{
+  "name": "Street Football Fantasy",
+  "short_name": "Street Fantasy",
+  "start_url": "/gameweeks",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101512",
+  "theme_color": "#1f7a4d",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
