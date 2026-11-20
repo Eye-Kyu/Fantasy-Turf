@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { can, type Action } from "./permissions";
 import { USER_ROLES } from "./roles";
 
-const organizerActions: Action[] = ["sortTeams", "confirmAttendance", "issueFines", "reconcileMatches", "inviteUsers", "manageCalendar"];
+const organizerActions: Action[] = ["sortTeams", "confirmAttendance", "issueFines", "manageViolations", "reconcileMatches", "inviteUsers", "manageCalendar"];
 const superAdminOnly: Action[] = ["setTraits", "manageUsers"];
 
 describe("can", () => {

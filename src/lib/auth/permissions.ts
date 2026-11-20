@@ -12,6 +12,7 @@ export type Action =
   | "sortTeams"
   | "confirmAttendance"
   | "issueFines"
+  | "manageViolations"
   | "reconcileMatches"
   | "inviteUsers"
   | "manageCalendar"
@@ -22,6 +23,7 @@ const ORGANIZER_ACTIONS: readonly Action[] = [
   "sortTeams",
   "confirmAttendance",
   "issueFines",
+  "manageViolations",
   "reconcileMatches",
   "inviteUsers",
   "manageCalendar",

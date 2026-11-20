@@ -4,6 +4,7 @@
  */
 import { z } from "zod";
 import { normalizePhone } from "./phone";
+import { MAX_FINE_POINTS } from "./constants";
 import { EVENT_TYPES } from "./domain";
 import { parseNairobiDateTime } from "./time";
 
@@ -105,3 +106,31 @@ export const matchActionSchema = z.object({ matchId: z.uuid() });
 export const gameweekActionSchema = z.object({ gameweekId: z.uuid(), matchId: z.uuid().optional() });
 export const eventActionSchema = z.object({ matchId: z.uuid(), clientId: z.uuid() });
 export const changeEventPlayerSchema = eventActionSchema.extend({ playerId: z.uuid() });
+
+// Forms send "" for an empty optional field; treat that as "not given".
+const blankToUndefined = (value: unknown) => (value === "" ? undefined : value);
+const finePoints = z.coerce.number().int().min(1).max(MAX_FINE_POINTS);
+
+export const issueFineSchema = z.object({
+  gameweekId: z.uuid(),
+  playerId: z.uuid(),
+  violationTypeId: z.uuid(),
+  points: z.preprocess(blankToUndefined, finePoints.optional()),
+  matchId: z.preprocess(blankToUndefined, z.uuid().optional()),
+  note: z.preprocess(blankToUndefined, z.string().trim().max(200).optional()),
+});
+
+export const voidFineSchema = z.object({ gameweekId: z.uuid(), fineId: z.uuid() });
+
+export const violationSchema = z.object({
+  name: z.string().trim().min(2).max(60),
+  description: z.preprocess(blankToUndefined, z.string().trim().max(200).optional()),
+  defaultPoints: finePoints,
+});
+
+export const updateViolationSchema = z.object({
+  violationTypeId: z.uuid(),
+  defaultPoints: finePoints,
+  // An unchecked checkbox is simply absent from the form.
+  isActive: z.preprocess((value) => value === "on", z.boolean()),
+});

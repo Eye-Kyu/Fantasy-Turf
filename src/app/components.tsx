@@ -45,3 +45,40 @@ export function PointsTable({ rows }: { rows: PointsRow[] }) {
     </div>
   );
 }
+
+interface FineRow {
+  id: string;
+  playerId: string;
+  playerName: string;
+  gameweekId: string;
+  gameweekNumber: number;
+  violation: string;
+  points: number;
+  note: string | null;
+  issuedBy: string | null;
+  voidedAt: Date | null;
+}
+
+/** Fines newest first; voided ones are struck through. Pass `voidAction` to show Void buttons. */
+export function FineList({ fines, voidAction }: { fines: FineRow[]; voidAction?: (formData: FormData) => Promise<void> }) {
+  if (fines.length === 0) return <p className="muted">No fines.</p>;
+  return (
+    <ul className="plain card">
+      {fines.map((fine) => (
+        <li key={fine.id} className={fine.voidedAt ? "voided" : ""}>
+          <span>
+            <a href={`/players/${fine.playerId}`}>{fine.playerName}</a> · {fine.violation} <strong>−{fine.points}</strong>
+            <span className="muted"> · GW{fine.gameweekNumber}{fine.note ? ` · ${fine.note}` : ""}{fine.issuedBy ? ` · by ${fine.issuedBy}` : ""}{fine.voidedAt ? " · voided" : ""}</span>
+          </span>
+          {voidAction && !fine.voidedAt && (
+            <form action={voidAction}>
+              <input type="hidden" name="gameweekId" value={fine.gameweekId} />
+              <input type="hidden" name="fineId" value={fine.id} />
+              <button type="submit" className="small ghost">Void</button>
+            </form>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}

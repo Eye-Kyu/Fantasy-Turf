@@ -96,3 +96,18 @@ export class ScoringError extends Error {
     this.name = "ScoringError";
   }
 }
+
+export class ViolationExistsError extends Error {
+  constructor(name: string) {
+    super(`A violation named "${name}" already exists`);
+    this.name = "ViolationExistsError";
+  }
+}
+
+/** A fine that cannot be issued as asked (inactive violation, wrong match, bad amount). */
+export class InvalidFineError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidFineError";
+  }
+}

@@ -2,8 +2,7 @@
  * Default catalog of fineable violations. Used to seed the `ViolationType` table;
  * organizers can edit it afterwards, so this file is only the starting point.
  *
- * TODO: the deductions below are suggested tiers, not agreed values (see "Open items"
- * in CLAUDE.md). Confirm or change them before the first fine is issued.
+ * Deductions are points, in three agreed tiers: minor 1, major 2, serious 3.
  */
 export interface ViolationDefinition {
   name: string;

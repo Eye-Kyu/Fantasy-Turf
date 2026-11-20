@@ -160,9 +160,9 @@ player's gameweek score. Fines are voided, never deleted, and record who issued 
 who voided them. The catalog (`ViolationType`) is seeded from `DEFAULT_VIOLATIONS` in
 `src/lib/violations.ts` and editable afterwards.
 
-**Assumption to confirm:** fines deduct fantasy points, not money.
+**Decided:** fines deduct points, not money, in the three tiers below.
 
-Suggested catalog (deductions are proposals, not agreed values):
+Standard catalog (tiers agreed; organizers can edit or add violations afterwards):
 
 | Tier | Pts | Violations |
 | --- | --- | --- |
@@ -253,8 +253,6 @@ schema or code; reinstating them means the changes noted.
 ## Open items (confirm before building the dependent feature)
 
 - [ ] Point values: clean sheet band, saves/tackles, MOTM
-- [ ] Fine deductions per violation (tiers above are proposals) and whether fines are
-      fantasy points or money
 - [ ] Late drop-outs after the lock: stay on their team and play short, or may the
       organizer substitute someone (and who may do that after the lock)?
 - [ ] Starting prices (from rating) and the fantasy budget cap
@@ -313,6 +311,7 @@ in `.env` at it. Never edit an applied migration; change the schema and run
 6. Scoring engine (goal, assist, goal-diff bonus first; TBD values wired as set)
    (done: `src/server/points.ts` computes player points from events, attendance and fines on every request (nothing stored), via `breakdownMatch` in `src/lib/scoring/engine.ts`. Pages: `/gameweeks/[id]/points` (provisional until the gameweek is locked), `/leaderboard` (season player points), season stats on profiles. Save and key-tackle points stay 0 until decided)
 7. Fines: violation catalog seed, issue/void flow, applied to gameweek scores
+   (done: `src/server/fines.ts`; organizers load the standard violations and edit the catalog at `/admin/violations`, issue and void fines at `/gameweeks/[id]/fines`; fines show on profiles and feed the points page. Fines can still be issued after a gameweek is locked (organizers only, who and when are recorded); they are not in the event audit log)
 8. Ratings update, fantasy squads, auto-sub, captain, transfers, leaderboards
 9. Partnerships, streaks, awards, WhatsApp notifications and result cards
 10. Betting

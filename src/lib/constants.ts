@@ -44,3 +44,6 @@ export const EVENT_POINTS: Record<EventType, number> = {
  * into teams happens before this moment; nobody is moved after it.
  */
 export const TEAM_LOCK_HOURS_BEFORE_KICKOFF = 3;
+
+/** Upper bound for one fine's deduction, to catch typos (e.g. 30 instead of 3). */
+export const MAX_FINE_POINTS = 20;
