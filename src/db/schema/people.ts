@@ -61,7 +61,7 @@ export const players = pgTable("players", {
   bio: text(),
   // Elo-style rating; for now it drives only the fantasy price. Constants are tunable.
   rating: doublePrecision().notNull().default(1000),
-  price: numeric({ precision: 4, scale: 1 }).notNull().default("5.0"),
+  price: numeric({ precision: 4, scale: 1 }).notNull().default("8.0"), // millions; see PRICE in constants.ts
   // Cached when a gameweek locks to keep profile pages cheap (see CLAUDE.md).
   currentStreak: integer().notNull().default(0),
   createdAt: createdAt(),

@@ -47,3 +47,35 @@ export const TEAM_LOCK_HOURS_BEFORE_KICKOFF = 3;
 
 /** Upper bound for one fine's deduction, to catch typos (e.g. 30 instead of 3). */
 export const MAX_FINE_POINTS = 20;
+
+/** Money in the fantasy game is in millions (M). A squad's total price may not exceed this. */
+export const FANTASY_BUDGET = 50;
+
+/**
+ * Player price follows rating: BASE at BASE_RATING, one more million per
+ * RATING_PER_MILLION points of rating, kept between MIN and MAX. Tunable; not validated
+ * against real games yet.
+ */
+export const PRICE = { BASE: 8, MIN: 4, MAX: 15, BASE_RATING: 1000, RATING_PER_MILLION: 50 } as const;
+
+/**
+ * Rating changes once per locked gameweek from form (not Elo): it rises for goals,
+ * assists, turning up and turning up week after week; it falls for missing a game and
+ * for fines. Tunable.
+ */
+export const RATING = {
+  START: 1000,
+  MIN: 600,
+  MAX: 1500,
+  GOAL: 10,
+  ASSIST: 6,
+  PLAYED: 4,
+  /** Per consecutive gameweek attended before this one, up to STREAK_CAP in total. */
+  STREAK_PER_GAMEWEEK: 2,
+  STREAK_CAP: 8,
+  /** Said they were going and did not turn up. */
+  NO_SHOW_AFTER_GOING: -12,
+  /** Did not turn up and had not said they were going. */
+  ABSENT: -4,
+  PER_FINE_POINT: -5,
+} as const;

@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, primaryKey, unique, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, numeric, pgTable, primaryKey, unique, uuid } from "drizzle-orm/pg-core";
 import { createdAt, id } from "./columns";
 import { gameweeks, seasons } from "./calendar";
 import { lineupSlot } from "./enums";
@@ -15,6 +15,10 @@ export const fantasySquads = pgTable(
     seasonId: uuid()
       .notNull()
       .references(() => seasons.id, { onDelete: "cascade" }),
+    // Money left to spend, in millions. Starts at FANTASY_BUDGET minus the squad's price;
+    // a transfer sells at the current price and buys at the current price, so price
+    // moves become spendable money only when a player is sold.
+    bank: numeric({ precision: 5, scale: 1 }).notNull(),
   },
   (t) => [unique().on(t.userId, t.seasonId)],
 );

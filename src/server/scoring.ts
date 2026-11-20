@@ -16,6 +16,7 @@ import { areTeamsLocked } from "@/lib/gameweek";
 import type { EventView, ScoringOp } from "@/lib/match-events";
 import { type Actor, assertCan } from "./actor";
 import { NotFoundError, ScoringError } from "./errors";
+import { applyGameweekRatings } from "./ratings";
 
 type AuditAction = "CREATE" | "VOID" | "EDIT" | "OVERRIDE";
 
@@ -295,7 +296,7 @@ export async function reconcileMatch(db: DbExecutor, actor: Actor, matchId: stri
   await db.update(matches).set({ reconciledById: actor.userId, reconciledAt: now }).where(eq(matches.id, matchId));
 }
 
-/** Locks the gameweek once every match is reconciled. Later changes become audited overrides. */
+/** Locks the gameweek once every match is reconciled, then updates ratings. Later changes become audited overrides. */
 export async function lockGameweek(db: DbExecutor, actor: Actor, gameweekId: string, now = new Date()) {
   assertCan(actor, "reconcileMatches");
   const [gameweek] = await db.select().from(gameweeks).where(eq(gameweeks.id, gameweekId));
@@ -305,7 +306,15 @@ export async function lockGameweek(db: DbExecutor, actor: Actor, gameweekId: str
   if (rows.length === 0 || rows.some((row) => !row.reconciledAt)) {
     throw new ScoringError("not-reconciled", "Every match must be reconciled before the gameweek can be locked");
   }
-  await db.update(gameweeks).set({ lockedAt: now }).where(and(eq(gameweeks.id, gameweekId), sql`${gameweeks.lockedAt} IS NULL`));
+  await db.transaction(async (tx) => {
+    const locked = await tx
+      .update(gameweeks)
+      .set({ lockedAt: now })
+      .where(and(eq(gameweeks.id, gameweekId), sql`${gameweeks.lockedAt} IS NULL`))
+      .returning({ id: gameweeks.id });
+    // Ratings and prices move once, at the moment the gameweek becomes final.
+    if (locked.length > 0) await applyGameweekRatings(tx, gameweekId);
+  });
 }
 
 /** Everything a match page needs. */
