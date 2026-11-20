@@ -3,12 +3,8 @@ import { eq } from "drizzle-orm";
 import type { DbExecutor } from "@/db/client";
 import { players, sessions, users } from "@/db/schema";
 import type { UserRole } from "@/lib/auth/roles";
-import {
-  generateSessionToken,
-  hashSessionToken,
-  isSessionExpired,
-  sessionExpiry,
-} from "@/lib/auth/session";
+import { isSessionExpired, sessionExpiry } from "@/lib/auth/session";
+import { generateToken, hashToken } from "@/lib/auth/tokens";
 
 export interface SessionUser {
   userId: string;
@@ -20,9 +16,9 @@ export interface SessionUser {
 
 /** Starts a session and returns the token to put in the user's cookie. */
 export async function createSession(db: DbExecutor, userId: string, now = new Date()) {
-  const token = generateSessionToken();
+  const token = generateToken();
   const expiresAt = sessionExpiry(now);
-  await db.insert(sessions).values({ userId, tokenHash: hashSessionToken(token), expiresAt });
+  await db.insert(sessions).values({ userId, tokenHash: hashToken(token), expiresAt });
   return { token, expiresAt };
 }
 
@@ -35,7 +31,7 @@ export async function findSessionUser(
   token: string,
   now = new Date(),
 ): Promise<SessionUser | null> {
-  const tokenHash = hashSessionToken(token);
+  const tokenHash = hashToken(token);
   const [row] = await db
     .select({
       userId: users.id,
@@ -60,5 +56,5 @@ export async function findSessionUser(
 
 /** Ends the session for a token (logout). Unknown tokens are ignored. */
 export async function deleteSession(db: DbExecutor, token: string): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.tokenHash, hashSessionToken(token)));
+  await db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token)));
 }

@@ -14,6 +14,27 @@ export class EmailTakenError extends Error {
   }
 }
 
+export class PhoneTakenError extends Error {
+  constructor() {
+    super("An account with that phone number already exists");
+    this.name = "PhoneTakenError";
+  }
+}
+
+export class InvalidInviteError extends Error {
+  constructor() {
+    super("This invite is invalid, expired or already used");
+    this.name = "InvalidInviteError";
+  }
+}
+
+export class TooManyAttemptsError extends Error {
+  constructor() {
+    super("Too many failed sign-in attempts");
+    this.name = "TooManyAttemptsError";
+  }
+}
+
 export class NotFoundError extends Error {
   constructor(what: string) {
     super(`${what} not found`);

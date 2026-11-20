@@ -9,10 +9,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <h1>Sign in</h1>
       <Notices error={error} />
       <form action={loginAction} className="card stack">
-        <label>Email<input type="email" name="email" autoComplete="email" required /></label>
+        <label>Email or phone number<input type="text" name="identifier" autoComplete="username" required /></label>
         <label>Password<input type="password" name="password" autoComplete="current-password" required /></label>
         <button type="submit">Sign in</button>
       </form>
+      <p className="muted">Joining is by invite only. Ask an organizer for your invite link.</p>
     </main>
   );
 }

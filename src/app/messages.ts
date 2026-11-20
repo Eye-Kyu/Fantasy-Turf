@@ -5,8 +5,12 @@
  */
 const ERRORS = {
   invalid: "Please check the form and try again.",
-  credentials: "That email and password don't match.",
+  credentials: "Those details don't match an account.",
+  locked: "Too many failed attempts. Please wait 15 minutes and try again.",
   "email-taken": "An account with that email already exists.",
+  "phone-taken": "An account with that phone number already exists.",
+  "phone-invalid": "Please enter a valid phone number, e.g. 0712 345 678.",
+  "invite-invalid": "This invite link is invalid, expired or already used.",
   forbidden: "You aren't allowed to do that.",
   "trait-exists": "A trait with that name already exists.",
 } as const;

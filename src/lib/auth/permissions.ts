@@ -13,6 +13,7 @@ export type Action =
   | "confirmAttendance"
   | "issueFines"
   | "reconcileMatches"
+  | "inviteUsers"
   | "setTraits"
   | "manageUsers";
 
@@ -21,6 +22,7 @@ const ORGANIZER_ACTIONS: readonly Action[] = [
   "confirmAttendance",
   "issueFines",
   "reconcileMatches",
+  "inviteUsers",
 ];
 
 /** Actions only a super admin may do, on top of everything an organizer can. */

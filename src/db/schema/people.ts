@@ -1,10 +1,12 @@
-import { doublePrecision, integer, numeric, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
+import { doublePrecision, index, integer, numeric, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
 import { createdAt, id, timestamptz } from "./columns";
 import { userRole } from "./enums";
 
 export const users = pgTable("users", {
   id: id(),
   email: text().notNull().unique(),
+  // Normalized +E.164 (see lib/phone.ts); optional so accounts made before phone login still work.
+  phone: text().unique(),
   passwordHash: text().notNull(),
   role: userRole().notNull().default("MANAGER"),
   createdAt: createdAt(),
@@ -21,6 +23,32 @@ export const sessions = pgTable("sessions", {
   expiresAt: timestamptz().notNull(),
   createdAt: createdAt(),
 });
+
+// Registration is invite-only: an organizer creates an invite, shares the link, and the
+// invitee's registration consumes it. Only a hash of the link token is stored.
+export const invites = pgTable("invites", {
+  id: id(),
+  tokenHash: text().notNull().unique(),
+  createdBy: uuid()
+    .notNull()
+    .references(() => users.id),
+  expiresAt: timestamptz().notNull(),
+  usedAt: timestamptz(),
+  usedBy: uuid().references(() => users.id),
+  createdAt: createdAt(),
+});
+
+// Recent failed sign-ins, keyed by the identifier typed (lowercased email or normalized
+// phone), used to lock an account against password guessing. Rows are short-lived.
+export const loginFailures = pgTable(
+  "login_failures",
+  {
+    id: id(),
+    identifier: text().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.identifier, t.createdAt)],
+);
 
 // Every user is also a player (same person, separate records).
 export const players = pgTable("players", {

@@ -15,6 +15,13 @@
       "when": 1795184512009,
       "tag": "0001_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795185072773,
+      "tag": "0002_invites_phone_throttle",
+      "breakpoints": true
     }
   ]
 }

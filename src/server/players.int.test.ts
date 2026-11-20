@@ -13,12 +13,16 @@ import {
   setPlayerTraits,
   updateOwnProfile,
 } from "./players";
-import { withRollback } from "./test-utils";
+import { makeInviteToken, withRollback } from "./test-utils";
+
+let phoneCounter = 0;
 
 /** Registers a user with the given role and returns them as an actor plus their player id. */
 async function makeUser(db: DbExecutor, name: string, role: UserRole) {
   const account = await registerAccount(db, {
     email: `${name.toLowerCase()}@example.com`,
+    phone: `+2547${String(++phoneCounter).padStart(8, "0")}`,
+    inviteToken: await makeInviteToken(db),
     password: "a-long-password",
     displayName: name,
   });

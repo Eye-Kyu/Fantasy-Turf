@@ -17,6 +17,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <nav>
             <Link href="/" className="brand">Street Football Fantasy</Link>
             <Link href="/players">Players</Link>
+            {user && can(user.role, "inviteUsers") && <Link href="/admin/invites">Invites</Link>}
             {user && can(user.role, "setTraits") && <Link href="/admin/traits">Traits</Link>}
             {user ? (
               <>
@@ -26,10 +27,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 </form>
               </>
             ) : (
-              <>
-                <Link href="/login">Sign in</Link>
-                <Link href="/register">Join</Link>
-              </>
+              <Link href="/login">Sign in</Link>
             )}
           </nav>
         </header>

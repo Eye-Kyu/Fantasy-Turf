@@ -12,7 +12,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "test:db": "vitest run --config vitest.int.config.mts",
-    "admin:promote": "tsx --env-file=.env scripts/promote-user.ts"
+    "admin:promote": "tsx --env-file=.env scripts/promote-user.ts",
+    "admin:create": "tsx --env-file=.env scripts/create-admin.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",

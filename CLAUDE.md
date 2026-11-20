@@ -40,8 +40,18 @@ Enforce permissions at the API boundary, never in the UI alone. The rules live i
 place, `src/lib/auth/permissions.ts` (`can(role, action)`), and every service function
 checks the actor itself, so a page cannot forget the check.
 
-Registration is open and always creates a `MANAGER`. The first super admin (and any
-later role change) is made on the server: `npm run admin:promote -- <email> [ROLE]`.
+Registration is **invite-only**: organizers and the super admin create single-use invite
+links (`/admin/invites`, valid 7 days) and share them (e.g. on WhatsApp). Registering
+always creates a `MANAGER`. Players sign in with email **or** phone number (stored in
++254… form, see `src/lib/phone.ts`). The first super admin is created on the server with
+`npm run admin:create`; later role changes use `npm run admin:promote`.
+
+Security in place: scrypt password hashes, hashed session and invite tokens, HttpOnly
+SameSite cookies, sign-in lockout (5 failures per identifier per 15 minutes, in
+`src/lib/auth/policy.ts`), constant-time-ish rejection of unknown accounts, and browser
+security headers in `next.config.ts`. Email verification is deliberately not needed
+because only invited people can register. Password reset is done by an organizer for
+now (see Open items).
 
 ## Core rules
 
@@ -248,10 +258,10 @@ schema or code; reinstating them means the changes noted.
 - [ ] Bet starting balance and stake/payout mechanics
 - [ ] WhatsApp integration approach (Business API vs. manual share links)
 - [ ] Auto-sub bench priority rule when several bench players attended (default: bench order)
-- [ ] Login identifier: email only today; add phone number sign-in?
-- [ ] Registration: open to anyone who finds the site (current) or invite-only / approved by an organizer?
 - [ ] Profile picture storage (local disk on the homelab vs. a hosted service); the profile has no picture upload until decided
-- [ ] Security follow-ups before exposing the site publicly: login rate limiting, password reset, email verification
+- [ ] Password reset: recommended approach is organizer-issued one-time reset links (same mechanism as invites, no email/SMS service needed); build when first needed
+- [ ] Before exposing the site to the public internet: serve over HTTPS (Caddy/Cloudflare Tunnel), add per-IP rate limiting at the proxy, and tighten the CSP with nonces
+- [ ] Phone verification by SMS/WhatsApp OTP is not planned: the invite link already proves the organizer knows the person
 
 ## Commands
 
@@ -264,7 +274,8 @@ schema or code; reinstating them means the changes noted.
 | `npm run db:migrate` | Apply pending migrations to the database in `DATABASE_URL` |
 | `npm run db:studio` | Browse the database in Drizzle Studio |
 | `npm run test:db` | Integration tests against the real Postgres in `DATABASE_URL` (`*.int.test.ts`; each test rolls back its changes) |
-| `npm run admin:promote -- <email> [ROLE]` | Set a user's role (default `SUPER_ADMIN`); the only way to create the first super admin |
+| `npm run admin:create -- "Name" email phone` | Create the first super admin (asks for the password; registration is invite-only so nobody can invite the first user) |
+| `npm run admin:promote -- <email> [ROLE]` | Change a user's role (default `SUPER_ADMIN`) |
 
 The first migration (`drizzle/0000_init.sql`, 21 tables) is generated and committed.
 To set up a fresh machine:
