@@ -1,3 +1,4 @@
+import { attachDatabasePool } from "@vercel/functions";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
 
@@ -14,12 +15,17 @@ export type DbExecutor = Db | DbTransaction;
 
 let shared: Db | undefined;
 
-/** The app-wide client, created on first use from DATABASE_URL. */
+/**
+ * The app-wide client, created on first use from DATABASE_URL (on Neon, the pooled "-pooler"
+ * address). On Vercel the pool is attached to the function's lifecycle so idle connections
+ * are closed before an instance is suspended; elsewhere attaching does nothing.
+ */
 export function getDb(): Db {
   if (!shared) {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error("DATABASE_URL is not set (copy .env.example to .env)");
     shared = createDb(url);
+    attachDatabasePool(shared.$client);
   }
   return shared;
 }

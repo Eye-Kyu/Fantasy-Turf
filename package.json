@@ -13,9 +13,15 @@
     "db:studio": "drizzle-kit studio",
     "test:db": "vitest run --config vitest.int.config.mts",
     "admin:promote": "tsx --env-file=.env scripts/promote-user.ts",
-    "admin:create": "tsx --env-file=.env scripts/create-admin.ts"
+    "admin:create": "tsx --env-file=.env scripts/create-admin.ts",
+    "neon:migrate": "node scripts/with-neon.mjs drizzle-kit migrate",
+    "neon:admin:create": "node scripts/with-neon.mjs tsx scripts/create-admin.ts",
+    "neon:start": "node scripts/with-neon.mjs --pooled next start"
   },
   "dependencies": {
+    "@neon/config": "^1.14.6",
+    "@neon/env": "^2.1.9",
+    "@vercel/functions": "^3.11.3",
     "drizzle-orm": "^0.45.4",
     "next": "^16.4.6",
     "pg": "^8.23.1",
