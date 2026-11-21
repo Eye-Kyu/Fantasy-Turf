@@ -24,5 +24,9 @@ const url = pooled ? vars.DATABASE_URL : vars.DATABASE_URL_UNPOOLED;
 if (!url || url.includes("-pooler") !== pooled) throw new Error(`.env.neon has no ${pooled ? "pooled DATABASE_URL" : "direct DATABASE_URL_UNPOOLED"}`);
 
 console.log(`Using the Neon database at ${new URL(url).hostname}`);
-const child = spawn(command, args, { stdio: "inherit", shell: process.platform === "win32", env: { ...process.env, DATABASE_URL: url } });
+// Windows needs a shell to run npm's .cmd shims, and a shell joins the arguments into one
+// command line, so quote any that hold spaces or shell characters ("Pancrass Muiruri").
+const win = process.platform === "win32";
+const quote = (a) => (/[\s"&|<>^()%!]/.test(a) ? `"${a.replace(/"/g, '\\"')}"` : a);
+const child = spawn(command, win ? args.map(quote) : args, { stdio: "inherit", shell: win, env: { ...process.env, DATABASE_URL: url } });
 child.on("exit", (code) => process.exit(code ?? 1));
