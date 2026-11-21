@@ -1,6 +1,6 @@
 {
-  "name": "Street Football Fantasy",
-  "short_name": "Street Fantasy",
+  "name": "Turf Gong",
+  "short_name": "Turf Gong",
   "start_url": "/gameweeks",
   "scope": "/",
   "display": "standalone",

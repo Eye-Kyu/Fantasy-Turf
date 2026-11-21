@@ -27,7 +27,7 @@ export default async function HomePage() {
       <main className="home">
         <section className="cover">
           <div className="cover-copy">
-            <h1>Street Football Fantasy League</h1>
+            <h1>Turf Gong</h1>
             <p>Weekly street football in Nairobi, with fantasy squads on top.</p>
             <div className="band-actions">
               <Link href="/register" className="button">Join the league</Link>
@@ -50,7 +50,7 @@ export default async function HomePage() {
       <section className="cover">
         <div className="cover-copy">
           {season && <p className="cover-issue">{season.name}</p>}
-          <h1>Street Football Fantasy League</h1>
+          <h1>Turf Gong</h1>
           <p>Weekly street football in Nairobi, with fantasy squads on top.</p>
           <div className="band-actions">
             <Link href="/fantasy" className="button">Pick your team</Link>

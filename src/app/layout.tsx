@@ -7,7 +7,7 @@ import { NavTabs, type NavItem } from "./nav-tabs";
 import "./globals.css";
 
 export const metadata = {
-  title: "Street Football Fantasy League",
+  title: "Turf Gong",
   description: "Weekly street football in Nairobi, with fantasy squads on top.",
   manifest: "/manifest.webmanifest",
 };
@@ -37,9 +37,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <header className="masthead">
           <nav className="masthead-inner">
             <div className="masthead-top">
-              <Link href="/" className="brand" aria-label="Street Football Fantasy, home">
-                <span className="crest" aria-hidden="true">SF</span>
-                <span>Street Football Fantasy</span>
+              <Link href="/" className="brand" aria-label="Turf Gong, home">
+                <span className="crest" aria-hidden="true">TG</span>
+                <span>Turf Gong</span>
               </Link>
               <div className="account">
                 {user ? (
